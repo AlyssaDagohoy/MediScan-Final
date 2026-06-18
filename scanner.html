@@ -418,8 +418,7 @@ document.addEventListener('keydown', function(e){
 
 // ── Gemini ────────────────────────────────────────────────────
 const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
-async function callGeminiOnce(model, contents){
-  async function callGeminiOnce(model, contents){
+async function callGeminiOnce(model, contents) {
   const response = await fetch('/api/gemini', {
     method: 'POST',
     headers: {
@@ -435,6 +434,12 @@ async function callGeminiOnce(model, contents){
       }
     })
   });
+
+  return {
+    status: response.status,
+    data: await response.json()
+  };
+}
 
   return { status: response.status, data: await response.json() };
 }
