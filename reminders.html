@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediScan — Reminders</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css"/>
+<link rel="stylesheet" href="style.css"/>
+<style>
+  .ai-analyzing{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:10px;border:1px solid var(--border);background:var(--card,rgba(255,255,255,0.03));font-size:0.86rem;color:var(--ink2);}
+  .ai-analyzing .spin{animation:ai-spin 0.9s linear infinite;font-size:1.1rem;}
+  @keyframes ai-spin{to{transform:rotate(360deg);}}
+  .ai-suggest-card{border:1px solid var(--border);border-radius:12px;padding:16px;background:var(--card,rgba(255,255,255,0.03));margin-bottom:12px;}
+  .ai-suggest-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:0.78rem;letter-spacing:0.04em;text-transform:uppercase;color:var(--accent,#8b9eff);font-weight:600;}
+  .ai-suggest-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+  .ai-pill{font-size:0.72rem;padding:4px 10px;border-radius:20px;border:1px solid var(--border);color:var(--ink2);}
+  .ai-suggest-title{font-size:0.92rem;color:var(--ink);margin-bottom:4px;font-weight:500;}
+  .ai-suggest-notes{font-size:0.82rem;color:var(--ink2);margin-bottom:12px;line-height:1.5;}
+  .ai-suggest-actions{display:flex;gap:8px;justify-content:flex-end;}
+  .reminder-form{display:grid;grid-template-columns:1.4fr 1fr 0.9fr;gap:10px;margin-bottom:10px;}
+  .reminder-form .full{grid-column:1 / -1;}
+  .reminder-form input,.reminder-form select,.reminder-form textarea{width:100%;padding:9px 11px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--ink);font-family:inherit;font-size:0.86rem;}
+  .reminder-form textarea{resize:vertical;min-height:54px;}
+  @media(max-width:640px){.reminder-form{grid-template-columns:1fr;}}
+  .reminder-card{display:flex;align-items:flex-start;gap:12px;padding:14px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;}
+  .reminder-card.done{opacity:0.55;}
+  .reminder-check{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);flex-shrink:0;margin-top:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:transparent;color:transparent;font-size:0.7rem;}
+  .reminder-check.checked{background:var(--accent,#8b9eff);border-color:var(--accent,#8b9eff);color:#fff;}
+  .reminder-info{flex:1;min-width:0;}
+  .reminder-title{font-size:0.92rem;color:var(--ink);font-weight:500;}
+  .reminder-title.done{text-decoration:line-through;}
+  .reminder-meta{font-size:0.78rem;color:var(--ink2);margin-top:3px;}
+  .reminder-notes{font-size:0.8rem;color:var(--ink2);margin-top:5px;line-height:1.45;}
+  .reminder-badges{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+  .reminder-actions{display:flex;gap:4px;flex-shrink:0;}
+  .today-banner{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;margin-bottom:1rem;border:1px solid color-mix(in srgb,var(--amber,#d9a441) 40%,transparent);background:color-mix(in srgb,var(--amber,#d9a441) 10%,transparent);font-size:0.85rem;color:var(--ink2);}
+  .today-banner i{color:var(--amber,#d9a441);font-size:1.1rem;}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="logo">
+        <div class="logo-icon"><i class="ti ti-file-text"></i></div>
+        <div class="logo-name">MediScan</div>
+      </div>
+      <button class="sidebar-toggle" onclick="toggleSidebar()" title="Close sidebar"><i class="ti ti-layout-sidebar-left-collapse"></i></button>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Menu</div>
+      <a class="nav-item" href="scanner.html"><i class="ti ti-scan"></i> Scan Medical Result</a>
+      <a class="nav-item" href="vault.html"><i class="ti ti-folder-open"></i> My Documents</a>
+      <div class="nav-label" style="margin-top:0.5rem;">Tools</div>
+      <a class="nav-item active" href="reminders.html"><i class="ti ti-bell"></i> Reminders</a>
+      <a class="nav-item" href="settings.html"><i class="ti ti-settings"></i> Settings</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div id="sidebarUser" style="display:flex;align-items:center;gap:10px;padding:.75rem .8rem;background:var(--surface3);border:1px solid var(--border);border-radius:var(--r2);margin-bottom:.75rem;">
+        <div id="userAvatar" style="width:34px;height:34px;border-radius:50%;background:var(--teal-mid);border:1px solid var(--teal);display:flex;align-items:center;justify-content:center;color:var(--teal);font-size:15px;font-weight:600;flex-shrink:0;">?</div>
+        <div style="flex:1;min-width:0;">
+          <div id="userName" style="font-size:.78rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+          <div id="userEmail" style="font-size:.68rem;color:var(--ink4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+        </div>
+      </div>
+      <button onclick="logout()" style="width:100%;display:flex;align-items:center;gap:8px;padding:.6rem .8rem;background:transparent;border:1px solid var(--border);border-radius:var(--r);color:var(--ink3);font-family:'Inter',sans-serif;font-size:.78rem;cursor:pointer;transition:all .15s;margin-bottom:.75rem;" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)';this.style.background='var(--red-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--ink3)';this.style.background='transparent'">
+        <i class="ti ti-logout"></i> Log out
+      </button>
+      <div class="sidebar-disclaimer">MediScan does not replace professional medical advice.</div>
+    </div>
+  </aside>
+  <div class="main-wrapper" id="mainWrapper">
+    <header>
+      <div class="header-left">
+        <button class="sidebar-open-btn" id="sidebarOpenBtn" onclick="openSidebar()"><i class="ti ti-menu-2"></i></button>
+        <span class="badge">Reminders</span>
+      </div>
+      <div class="header-right">
+        <button class="theme-btn" onclick="toggleTheme()" title="Toggle light/dark mode" id="themeBtn"><i class="ti ti-sun" id="themeIcon"></i></button>
+      </div>
+    </header>
+    <div class="content-scroll">
+      <div class="hero">
+        <div class="hero-eyebrow"><div class="eyebrow-line"></div><span class="eyebrow-text">Reminders</span></div>
+        <h1>Keep track of<br>what's <em>next</em></h1>
+        <p>Set your own reminders, or let AI flag follow-ups and dates from your vault.</p>
+      </div>
+      <main>
+        <div id="todayBanner"></div>
+        <div class="section"><div class="section-body">
+          <div class="ai-suggest-head" style="color:var(--ink2);"><i class="ti ti-square-plus" style="color:var(--ink2);"></i> Add a reminder</div>
+          <div class="reminder-form">
+            <input type="text" id="newTitle" placeholder="What's this for? (e.g. Refill metformin)"/>
+            <input type="date" id="newDate"/>
+            <input type="time" id="newTime"/>
+            <select id="newCategory">
+              <option value="Medication">Medication</option>
+              <option value="Appointment">Appointment</option>
+              <option value="Follow-up">Follow-up</option>
+              <option value="Other">Other</option>
+            </select>
+            <textarea id="newNotes" class="full" placeholder="Notes (optional)"></textarea>
+          </div>
+          <div style="display:flex;justify-content:flex-end;">
+            <button class="btn-primary" onclick="addManualReminder()"><i class="ti ti-plus"></i> Add reminder</button>
+          </div>
+        </div></div>
+        <div class="section"><div class="section-body">
+          <div class="ai-suggest-head"><i class="ti ti-sparkles"></i> AI suggestions from your vault</div>
+          <div id="aiSuggestStage"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn-secondary" onclick="scanVaultForReminders()" id="scanVaultBtn"><i class="ti ti-scan"></i> Scan vault for reminders</button>
+            <button class="btn-secondary" onclick="rescanEverything()"><i class="ti ti-refresh"></i> Re-scan everything</button>
+          </div>
+        </div></div>
+        <div class="section"><div class="section-body">
+          <div class="ai-suggest-head" style="color:var(--ink2);"><i class="ti ti-list-check" style="color:var(--ink2);"></i> Upcoming</div>
+          <div id="upcomingList"></div>
+        </div></div>
+        <div class="section" id="completedSection" style="display:none;"><div class="section-body">
+          <button class="btn-secondary" onclick="toggleCompleted()" id="completedToggleBtn" style="margin-bottom:10px;">Show completed</button>
+          <div id="completedList" style="display:none;"></div>
+        </div></div>
+      </main>
+    </div>
+    <footer>MediScan &nbsp;·&nbsp; AI-powered health document vault &nbsp;·&nbsp; Not a substitute for professional medical advice</footer>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="modal-overlay" id="confirmModalOverlay" onclick="if(event.target===this)closeConfirmModal()">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-head">
+      <div class="modal-head-title" id="confirmModalTitle">Confirm</div>
+      <button class="modal-close" onclick="closeConfirmModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body"><p id="confirmModalMessage" style="font-size:0.86rem;color:var(--ink2);line-height:1.6;margin:0;"></p></div>
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="closeConfirmModal()">Cancel</button>
+      <button class="btn-primary" id="confirmModalConfirmBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script src="auth.js"></script>
+<script>
+requireAuth();
+const _sess = getSession();
+if(_sess){
+  document.getElementById('userName').textContent = _sess.name;
+  document.getElementById('userEmail').textContent = _sess.email;
+  document.getElementById('userAvatar').textContent = _sess.name.charAt(0).toUpperCase();
+}
+
+const GEMINI_API_KEY = 'AQ.Ab8RN6IfZKbStgIqMyYabW7v4upenyJhKV3Ygd-Wli4WA9r8jA';
+const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
+const MAX_DOCS_PER_SCAN = 5;
+
+async function callGeminiOnce(model, contents){
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-goog-api-key':GEMINI_API_KEY},
+    body: JSON.stringify({ contents, generationConfig:{ maxOutputTokens:1024, thinkingConfig:{ thinkingBudget:0 } } })
+  });
+  return { status: response.status, data: await response.json() };
+}
+async function callGeminiWithRetry(contents){
+  const maxAttempts=2, baseDelay=1500;
+  let lastErr='Unknown error.';
+  for(let m=0; m<GEMINI_MODELS.length; m++){
+    const model=GEMINI_MODELS[m];
+    for(let attempt=1; attempt<=maxAttempts; attempt++){
+      const { status, data }=await callGeminiOnce(model, contents);
+      if(!data.error) return data;
+      lastErr=data.error.message;
+      const overloaded=status===503||status===429;
+      if(!overloaded) throw new Error(lastErr);
+      if(attempt<maxAttempts){ await new Promise(r=>setTimeout(r,baseDelay*Math.pow(2,attempt-1))); }
+      else if(m<GEMINI_MODELS.length-1){ await new Promise(r=>setTimeout(r,800)); break; }
+      else throw new Error(`All models are busy (${lastErr}). Try again shortly.`);
+    }
+  }
+}
+
+let reminders = JSON.parse(localStorage.getItem(userKey('MediScan_reminders')) || '[]');
+let showCompleted = false;
+function saveReminders(){ localStorage.setItem(userKey('MediScan_reminders'), JSON.stringify(reminders)); }
+
+const savedTheme = localStorage.getItem('MediScan_theme');
+if(savedTheme==='light') document.body.classList.add('light');
+updateThemeIcon();
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  localStorage.setItem('MediScan_theme', document.body.classList.contains('light')?'light':'dark');
+  updateThemeIcon();
+}
+function updateThemeIcon(){ document.getElementById('themeIcon').className=document.body.classList.contains('light')?'ti ti-moon':'ti ti-sun'; }
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('hidden'); document.getElementById('mainWrapper').classList.toggle('expanded'); }
+function openSidebar(){ document.getElementById('sidebar').classList.add('open'); }
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str; return d.innerHTML; }
+function showToast(msg, isError){
+  const c=document.getElementById('toastContainer');
+  const t=document.createElement('div');
+  t.className=isError?'toast error':'toast';
+  t.innerHTML=`<i class="ti ${isError?'ti-alert-circle':'ti-check'}"></i> ${escapeHtml(msg)}`;
+  c.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); },2600);
+}
+function openConfirmModal(title, message, onConfirm, danger){
+  document.getElementById('confirmModalTitle').textContent=title;
+  document.getElementById('confirmModalMessage').textContent=message;
+  const btn=document.getElementById('confirmModalConfirmBtn');
+  btn.style.background=danger?'var(--red)':'';
+  btn.style.color=danger?'#fff':'';
+  btn.onclick=function(){ closeConfirmModal(); onConfirm(); };
+  document.getElementById('confirmModalOverlay').classList.add('show');
+}
+function closeConfirmModal(){ document.getElementById('confirmModalOverlay').classList.remove('show'); }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeConfirmModal(); });
+
+function addManualReminder(){
+  const title=document.getElementById('newTitle').value.trim();
+  const date=document.getElementById('newDate').value;
+  const time=document.getElementById('newTime').value;
+  const category=document.getElementById('newCategory').value;
+  const notes=document.getElementById('newNotes').value.trim();
+  if(!title||!date){ showToast('A title and date are required.',true); return; }
+  reminders.push({ id:Date.now(), title, date, time, category, notes, source:'manual', done:false, createdAt:Date.now() });
+  saveReminders();
+  document.getElementById('newTitle').value='';
+  document.getElementById('newDate').value='';
+  document.getElementById('newTime').value='';
+  document.getElementById('newNotes').value='';
+  renderReminders();
+  showToast('Reminder added.');
+}
+function toggleDone(id){
+  const r=reminders.find(x=>x.id===id); if(!r) return;
+  r.done=!r.done; saveReminders(); renderReminders();
+}
+function deleteReminder(id){
+  const r=reminders.find(x=>x.id===id);
+  openConfirmModal('Delete reminder',`Remove "${r?r.title:'this reminder'}"? This cannot be undone.`,function(){
+    reminders=reminders.filter(x=>x.id!==id); saveReminders(); renderReminders(); showToast('Reminder deleted.');
+  },true);
+}
+function toggleCompleted(){
+  showCompleted=!showCompleted;
+  document.getElementById('completedList').style.display=showCompleted?'block':'none';
+  document.getElementById('completedToggleBtn').textContent=showCompleted?'Hide completed':'Show completed';
+}
+function formatReminderDate(dateStr, timeStr){
+  if(!dateStr) return '';
+  const d=new Date(dateStr+'T'+(timeStr||'00:00'));
+  const dateLabel=d.toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
+  if(!timeStr) return dateLabel;
+  return `${dateLabel} · ${d.toLocaleTimeString('en-PH',{hour:'numeric',minute:'2-digit'})}`;
+}
+function renderReminderCard(r){
+  return `<div class="reminder-card ${r.done?'done':''}">
+    <button class="reminder-check ${r.done?'checked':''}" onclick="toggleDone(${r.id})">${r.done?'<i class="ti ti-check"></i>':''}</button>
+    <div class="reminder-info">
+      <div class="reminder-title ${r.done?'done':''}">${escapeHtml(r.title)}</div>
+      <div class="reminder-meta">${formatReminderDate(r.date,r.time)}</div>
+      ${r.notes?`<div class="reminder-notes">${escapeHtml(r.notes)}</div>`:''}
+      <div class="reminder-badges"><span class="ai-pill">${escapeHtml(r.category||'Other')}</span><span class="ai-pill">${r.source==='ai'?'AI suggested':'Manual'}</span></div>
+    </div>
+    <div class="reminder-actions"><button class="icon-btn danger" title="Delete" onclick="deleteReminder(${r.id})"><i class="ti ti-trash"></i></button></div>
+  </div>`;
+}
+function renderReminders(){
+  const upcoming=reminders.filter(r=>!r.done).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  const completed=reminders.filter(r=>r.done).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+  document.getElementById('upcomingList').innerHTML=upcoming.length?upcoming.map(renderReminderCard).join(''):`<div class="empty-state"><i class="ti ti-bell-off"></i><p>No upcoming reminders yet.</p></div>`;
+  document.getElementById('completedSection').style.display=completed.length?'block':'none';
+  document.getElementById('completedList').innerHTML=completed.map(renderReminderCard).join('');
+  renderTodayBanner(upcoming);
+  maybeFireNotifications(upcoming);
+}
+function renderTodayBanner(upcoming){
+  const todayStr=new Date().toISOString().slice(0,10);
+  const dueToday=upcoming.filter(r=>r.date===todayStr);
+  const banner=document.getElementById('todayBanner');
+  if(!dueToday.length){ banner.innerHTML=''; return; }
+  banner.innerHTML=`<div class="today-banner"><i class="ti ti-alert-circle"></i><div>${dueToday.length} reminder${dueToday.length===1?'':'s'} due <b>today</b>: ${dueToday.map(r=>escapeHtml(r.title)).join(', ')}</div></div>`;
+}
+function maybeFireNotifications(upcoming){
+  if(localStorage.getItem(userKey('MediScan_notifications_enabled'))!=='true') return;
+  if(!('Notification' in window)||Notification.permission!=='granted') return;
+  const leadDays=parseInt(localStorage.getItem(userKey('MediScan_reminder_lead_days'))||'1',10);
+  const today=new Date(); today.setHours(0,0,0,0);
+  const notifiedToday=JSON.parse(sessionStorage.getItem(userKey('MediScan_notified_today'))||'[]');
+  upcoming.forEach(r=>{
+    if(!r.date) return;
+    const dueDate=new Date(r.date+'T00:00:00');
+    const diffDays=Math.round((dueDate-today)/86400000);
+    if(diffDays===leadDays&&!notifiedToday.includes(r.id)){
+      new Notification('MediScan reminder',{ body:r.title+(diffDays===0?' — due today':` — due in ${diffDays} day${diffDays===1?'':'s'}`) });
+      notifiedToday.push(r.id);
+    }
+  });
+  sessionStorage.setItem(userKey('MediScan_notified_today'),JSON.stringify(notifiedToday));
+}
+
+function getScannedIds(){ return JSON.parse(localStorage.getItem(userKey('MediScan_reminder_scanned_ids'))||'[]'); }
+function markScanned(ids){
+  const existing=getScannedIds();
+  localStorage.setItem(userKey('MediScan_reminder_scanned_ids'),JSON.stringify([...new Set([...existing,...ids])]));
+}
+function rescanEverything(){
+  localStorage.removeItem(userKey('MediScan_reminder_scanned_ids'));
+  showToast('Cleared scan history — next scan will check everything again.');
+}
+
+async function analyzeDocForReminder(doc){
+  const base64=doc.dataUrl.split(',')[1];
+  const prompt=`Look at this medical document. Does it mention anything time-sensitive that the patient should be reminded about — a follow-up appointment, a re-test date, or a medication course with a clear end date? Respond with ONLY a raw JSON object, no markdown fences, no explanation:
+{"hasReminder": true or false, "title": short description if true else null, "date": "YYYY-MM-DD" if a specific date can be determined else null, "notes": one short sentence of context if true else null}
+If there's nothing time-sensitive, just return {"hasReminder": false, "title": null, "date": null, "notes": null}.`;
+  const contents=[{ role:'user', parts:[{ text:prompt },{ inline_data:{ mime_type:doc.mime, data:base64 } }] }];
+  const data=await callGeminiWithRetry(contents);
+  const text=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+  return JSON.parse(text.replace(/```json|```/g,'').trim());
+}
+
+let pendingSuggestions=[];
+async function scanVaultForReminders(){
+  const vaultDocs=JSON.parse(localStorage.getItem(userKey('MediScan_vault'))||'[]');
+  const scannedIds=getScannedIds();
+  const candidates=vaultDocs.filter(d=>d.dataUrl&&!scannedIds.includes(d.id)).slice(0,MAX_DOCS_PER_SCAN);
+  const stage=document.getElementById('aiSuggestStage');
+  if(!vaultDocs.length){ stage.innerHTML=`<div class="ai-analyzing"><i class="ti ti-folder-x"></i> Your vault is empty — upload something first.</div>`; return; }
+  if(!candidates.length){ stage.innerHTML=`<div class="ai-analyzing"><i class="ti ti-check"></i> Everything has already been checked. Use "Re-scan everything" to check again.</div>`; return; }
+  const btn=document.getElementById('scanVaultBtn');
+  btn.disabled=true;
+  stage.innerHTML=`<div class="ai-analyzing"><i class="ti ti-loader-2 spin"></i> Checking ${candidates.length} file${candidates.length===1?'':'s'} for time-sensitive info...</div>`;
+  pendingSuggestions=[];
+  const scannedThisRun=[];
+  for(const doc of candidates){
+    scannedThisRun.push(doc.id);
+    try{ const result=await analyzeDocForReminder(doc); if(result.hasReminder) pendingSuggestions.push({ docId:doc.id, docName:doc.name, ...result }); }
+    catch(err){ continue; }
+  }
+  markScanned(scannedThisRun);
+  btn.disabled=false;
+  if(!pendingSuggestions.length){ stage.innerHTML=`<div class="ai-analyzing"><i class="ti ti-check"></i> Checked ${candidates.length} file${candidates.length===1?'':'s'} — nothing time-sensitive found.</div>`; return; }
+  renderSuggestions();
+}
+function renderSuggestions(){
+  const stage=document.getElementById('aiSuggestStage');
+  stage.innerHTML=pendingSuggestions.map((s,i)=>`
+    <div class="ai-suggest-card">
+      <div class="ai-suggest-head"><i class="ti ti-sparkles"></i> Suggested reminder</div>
+      <div class="ai-suggest-meta">
+        <span class="ai-pill"><i class="ti ti-file-text"></i> From "${escapeHtml(s.docName)}"</span>
+        ${s.date?`<span class="ai-pill"><i class="ti ti-calendar"></i> ${escapeHtml(s.date)}</span>`:''}
+      </div>
+      <div class="ai-suggest-title">${escapeHtml(s.title||'Untitled reminder')}</div>
+      ${s.notes?`<div class="ai-suggest-notes">${escapeHtml(s.notes)}</div>`:''}
+      <div class="ai-suggest-actions">
+        <button class="btn-secondary" onclick="dismissSuggestion(${i})">Dismiss</button>
+        <button class="btn-primary" onclick="acceptSuggestion(${i})">Add reminder</button>
+      </div>
+    </div>`).join('');
+}
+function acceptSuggestion(i){
+  const s=pendingSuggestions[i]; if(!s) return;
+  reminders.push({ id:Date.now(), title:s.title||'Reminder from '+s.docName, date:s.date||new Date().toISOString().slice(0,10), time:'', category:'Follow-up', notes:s.notes||'', source:'ai', done:false, createdAt:Date.now() });
+  saveReminders(); pendingSuggestions.splice(i,1); renderSuggestions(); renderReminders(); showToast('Reminder added.');
+}
+function dismissSuggestion(i){ pendingSuggestions.splice(i,1); renderSuggestions(); }
+
+renderReminders();
+</script>
+</body>
+</html>

@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediScan — Medical Result Scanner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css"/>
+<link rel="stylesheet" href="style.css"/>
+<style>
+.vault-picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;max-height:420px;overflow-y:auto;padding:4px 2px;}
+.vault-picker-card{border:2px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color 0.15s,transform 0.15s;background:var(--surface3);}
+.vault-picker-card:hover{border-color:var(--accent,#8b9eff);transform:translateY(-2px);}
+.vault-picker-card.selected{border-color:var(--accent,#8b9eff);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent,#8b9eff) 25%,transparent);}
+.vault-picker-thumb{width:100%;height:90px;object-fit:cover;display:block;background:var(--surface2);}
+.vault-picker-thumb-placeholder{width:100%;height:90px;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--ink3);font-size:1.6rem;}
+.vault-picker-name{font-size:0.72rem;padding:6px 8px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;}
+.vault-picker-meta{font-size:0.67rem;padding:0 8px 7px;color:var(--ink3);}
+.vault-picker-empty{font-size:0.85rem;color:var(--ink3);text-align:center;padding:2.5rem 1rem;}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="logo">
+        <div class="logo-icon"><i class="ti ti-file-text"></i></div>
+        <div class="logo-name">MediScan</div>
+      </div>
+      <button class="sidebar-toggle" onclick="toggleSidebar()" title="Close sidebar">
+        <i class="ti ti-layout-sidebar-left-collapse"></i>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Menu</div>
+      <a class="nav-item active" href="scanner.html"><i class="ti ti-scan"></i> Scan Medical Result</a>
+      <a class="nav-item" href="vault.html"><i class="ti ti-folder-open"></i> My Documents</a>
+      <div class="nav-label" style="margin-top:0.5rem;">Tools</div>
+      <a class="nav-item" href="reminders.html"><i class="ti ti-bell"></i> Reminders</a>
+      <a class="nav-item" href="settings.html"><i class="ti ti-settings"></i> Settings</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div id="sidebarUser" style="display:flex;align-items:center;gap:10px;padding:.75rem .8rem;background:var(--surface3);border:1px solid var(--border);border-radius:var(--r2);margin-bottom:.75rem;">
+        <div id="userAvatar" style="width:34px;height:34px;border-radius:50%;background:var(--teal-mid);border:1px solid var(--teal);display:flex;align-items:center;justify-content:center;color:var(--teal);font-size:15px;font-weight:600;flex-shrink:0;">?</div>
+        <div style="flex:1;min-width:0;">
+          <div id="userName" style="font-size:.78rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+          <div id="userEmail" style="font-size:.68rem;color:var(--ink4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+        </div>
+      </div>
+      <button onclick="logout()" style="width:100%;display:flex;align-items:center;gap:8px;padding:.6rem .8rem;background:transparent;border:1px solid var(--border);border-radius:var(--r);color:var(--ink3);font-family:'Inter',sans-serif;font-size:.78rem;cursor:pointer;transition:all .15s;margin-bottom:.75rem;" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)';this.style.background='var(--red-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--ink3)';this.style.background='transparent'">
+        <i class="ti ti-logout"></i> Log out
+      </button>
+      <div class="sidebar-disclaimer">MediScan does not replace professional medical advice.</div>
+    </div>
+  </aside>
+
+  <div class="main-wrapper" id="mainWrapper">
+    <header>
+      <div class="header-left">
+        <button class="sidebar-open-btn" id="sidebarOpenBtn" onclick="openSidebar()"><i class="ti ti-menu-2"></i></button>
+        <span class="badge">AI Scanner</span>
+      </div>
+      <div class="header-right">
+        <button class="theme-btn" onclick="toggleTheme()" title="Toggle light/dark mode" id="themeBtn"><i class="ti ti-sun" id="themeIcon"></i></button>
+      </div>
+    </header>
+
+    <div class="content-scroll">
+      <div class="hero">
+        <div class="hero-eyebrow"><div class="eyebrow-line"></div><span class="eyebrow-text">Medical Result Scanner</span></div>
+        <h1>Understand any <em>medical result</em><br>instantly with AI</h1>
+        <p>Upload a photo of your lab result or any medical document. Our AI will extract and clearly explain the findings, what they mean, and what to do next — in English or Filipino.</p>
+      </div>
+
+      <main>
+        <div class="section">
+          <div class="section-head"><span class="section-num">STEP 1</span><span class="section-title">Upload your document</span></div>
+          <div class="section-body">
+            <div class="upload-zone" id="uploadZone">
+              <input type="file" id="fileInput" accept="image/*" onchange="handleFile(event)"/>
+              <i class="ti ti-cloud-upload upload-icon"></i>
+              <div class="upload-title">Drop your image here or click to browse</div>
+              <div class="upload-sub">Supports JPG, PNG, HEIC · Max 10MB · <span>Or use your camera</span></div>
+            </div>
+            <div class="input-tools">
+              <button class="tool-btn" onclick="document.getElementById('fileInput').click()"><i class="ti ti-photo"></i> Choose from gallery</button>
+              <button class="tool-btn" onclick="openCamera()"><i class="ti ti-camera"></i> Take a photo</button>
+              <button class="tool-btn" onclick="openVaultPicker()"><i class="ti ti-folder-open"></i> Pick from My Documents</button>
+            </div>
+            <div class="preview-box" id="previewBox">
+              <img id="previewImg" src="" alt="Uploaded document preview"/>
+              <button class="preview-remove" onclick="removeFile()"><i class="ti ti-x"></i> Remove</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head"><span class="section-num">STEP 2</span><span class="section-title">Scan options</span></div>
+          <div class="section-body">
+            <div class="field">
+              <label>Output language</label>
+              <select id="langSelect">
+                <option value="english">English</option>
+                <option value="filipino">Filipino (Tagalog)</option>
+                <option value="both">Both (English + Filipino)</option>
+              </select>
+            </div>
+            <div class="divider"></div>
+            <div class="field">
+              <label>Additional notes <span style="color:var(--ink4);font-weight:400;">(optional)</span></label>
+              <textarea id="notesInput" placeholder="e.g. For my mother, this is her latest blood test..."></textarea>
+            </div>
+            <div class="field">
+              <label>I want AI to also check for:</label>
+              <div class="pills">
+                <label class="pill"><input type="checkbox" value="warnings" id="chk1"/> <i class="ti ti-alert-triangle" style="font-size:13px;"></i> Concerning findings</label>
+                <label class="pill"><input type="checkbox" value="ranges" id="chk2"/> <i class="ti ti-arrows-exchange" style="font-size:13px;"></i> Compare to normal range</label>
+                <label class="pill"><input type="checkbox" value="followup" id="chk3"/> <i class="ti ti-clock" style="font-size:13px;"></i> Follow-up actions</label>
+                <label class="pill"><input type="checkbox" value="summary" id="chk4" checked/> <i class="ti ti-list" style="font-size:13px;"></i> Plain summary</label>
+              </div>
+            </div>
+            <button class="cta" id="scanBtn" onclick="scanDocument()" disabled>
+              <i class="ti ti-scan"></i><span>Scan & Analyze Document</span><i class="ti ti-arrow-right arrow"></i>
+            </button>
+            <div class="loading-dots" id="loadingDots" style="justify-content:center;margin-top:1rem;">
+              <span></span><span></span><span></span>
+              <span id="loadingStatusText" style="font-size:0.78rem;color:var(--ink3);margin-left:6px;background:none;width:auto;height:auto;border-radius:0;animation:none;">Reading your document...</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-section" id="resultSection" style="display:none;">
+          <div class="result-head">
+            <div class="result-head-left"><div class="status-dot"></div><span class="result-head-title" id="resultTitle">Document Analysis</span></div>
+            <div class="result-actions">
+              <button class="save-btn" onclick="copyResult()"><i class="ti ti-copy"></i> Copy</button>
+              <button class="save-btn" onclick="shareResult()"><i class="ti ti-share"></i> Share</button>
+            </div>
+          </div>
+          <div class="result-body">
+            <div class="rx-grid" id="rxGrid"></div>
+            <img id="resultImage" alt="Scanned document" style="display:none; max-width:100%; max-height:340px; border-radius:10px; margin-bottom:1rem; object-fit:contain;"/>
+            <div class="rx-instructions" id="resultText"></div>
+            <div class="alert amber" id="warningAlert" style="display:none;"><i class="ti ti-alert-triangle"></i><span id="warningText"></span></div>
+            <div class="alert teal-alert" style="margin-top:1rem;"><i class="ti ti-info-circle"></i><span>This result is AI-generated. Always confirm with your doctor before making any medical decisions.</span></div>
+            <div class="field" style="margin-top:1.25rem;">
+              <label>Have a question about this result?</label>
+              <div id="followUpThread" style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:0.6rem;max-height:280px;overflow-y:auto;"></div>
+              <div style="display:flex;gap:0.5rem;">
+                <input type="text" id="followUpInput" placeholder="e.g. What does high magnesium mean?" style="flex:1;padding:0.6rem 0.8rem;border-radius:8px;border:1px solid var(--ink4);background:transparent;color:inherit;font-family:inherit;font-size:0.85rem;" onkeydown="if(event.key==='Enter'){ askFollowUp(); }"/>
+                <button class="save-btn" onclick="askFollowUp()" id="followUpBtn"><i class="ti ti-send"></i> Ask</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section" id="recentSection">
+          <div class="section-head"><span class="section-num">RECENT</span><span class="section-title">Recent scans</span></div>
+          <div class="section-body">
+            <div id="starredGroup" style="display:none;margin-bottom:1.4rem;">
+              <div style="display:flex;align-items:center;gap:6px;font-size:0.72rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink3);margin-bottom:0.6rem;">
+                <i class="ti ti-star" style="color:#fbbf24;font-size:13px;"></i> Starred
+              </div>
+              <div class="history-strip" id="starredStrip"></div>
+            </div>
+            <div id="recentLabel" style="display:none;align-items:center;gap:6px;font-size:0.72rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink3);margin-bottom:0.6rem;">Recent</div>
+            <div class="history-strip" id="historyStrip">
+              <div style="font-size:0.82rem;color:var(--ink4);">No scans yet. Upload your first document above.</div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <footer>MediScan &nbsp;·&nbsp; AI-powered health document vault &nbsp;·&nbsp; Not a substitute for professional medical advice</footer>
+  </div>
+</div>
+
+<input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleFile(event, 'camera')"/>
+
+<!-- Camera Modal -->
+<div class="modal-overlay" id="cameraModalOverlay" onclick="if(event.target===this) closeCameraModal()">
+  <div class="modal-box" style="max-width:560px;">
+    <div class="modal-head"><div class="modal-head-title">Take a photo</div><button class="modal-close" onclick="closeCameraModal()"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body" style="padding-top:0;">
+      <div id="cameraStage" style="position:relative;background:#000;border-radius:10px;overflow:hidden;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;">
+        <video id="cameraVideo" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;display:none;"></video>
+        <canvas id="cameraCanvas" style="display:none;"></canvas>
+        <img id="cameraCapturedPreview" alt="Captured photo preview" style="width:100%;height:100%;object-fit:cover;display:none;"/>
+        <div id="cameraStatusMsg" style="color:#fff;font-size:0.85rem;padding:1.5rem;text-align:center;line-height:1.6;"><i class="ti ti-camera" style="font-size:28px;display:block;margin-bottom:0.5rem;opacity:0.7;"></i>Starting camera...</div>
+      </div>
+    </div>
+    <div class="modal-foot" id="cameraFootLive" style="display:none;"><button class="btn-secondary" onclick="closeCameraModal()">Cancel</button><button class="btn-primary" onclick="capturePhoto()"><i class="ti ti-camera"></i> Capture</button></div>
+    <div class="modal-foot" id="cameraFootReview" style="display:none;"><button class="btn-secondary" onclick="retakePhoto()">Retake</button><button class="btn-primary" onclick="useCapturedPhoto()">Use this photo</button></div>
+  </div>
+</div>
+
+<!-- Vault Picker Modal -->
+<div class="modal-overlay" id="vaultPickerOverlay" onclick="if(event.target===this) closeVaultPicker()">
+  <div class="modal-box" style="max-width:620px;">
+    <div class="modal-head">
+      <div class="modal-head-title"><i class="ti ti-folder-open" style="margin-right:6px;"></i> Pick from My Documents</div>
+      <button class="modal-close" onclick="closeVaultPicker()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="vaultPickerGrid"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="closeVaultPicker()">Cancel</button>
+      <button class="btn-primary" id="vaultPickerConfirmBtn" onclick="confirmVaultPick()" disabled>Use this document</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="modal-overlay" id="confirmModalOverlay" onclick="if(event.target===this) closeConfirmModal()">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-head"><div class="modal-head-title" id="confirmModalTitle">Confirm</div><button class="modal-close" onclick="closeConfirmModal()"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body"><p id="confirmModalMessage" style="font-size:0.86rem;color:var(--ink2);line-height:1.6;margin:0;"></p></div>
+    <div class="modal-foot"><button class="btn-secondary" onclick="closeConfirmModal()">Cancel</button><button class="btn-primary" id="confirmModalConfirmBtn">Confirm</button></div>
+  </div>
+</div>
+
+<script src="auth.js"></script>
+<script>
+requireAuth();
+const _sess = getSession();
+if(_sess){
+  document.getElementById('userName').textContent = _sess.name;
+  document.getElementById('userEmail').textContent = _sess.email;
+  document.getElementById('userAvatar').textContent = _sess.name.charAt(0).toUpperCase();
+}
+
+const GEMINI_API_KEY = 'AQ.Ab8RN6IfZKbStgIqMyYabW7v4upenyJhKV3Ygd-Wli4WA9r8jA';
+let uploadedFile = null;
+let uploadedBase64 = null;
+let scanHistory = JSON.parse(localStorage.getItem(userKey('MediScan_history')) || '[]');
+let conversationHistory = [];
+
+const HISTORY_ICONS = { lab:'ti-microscope', medcert:'ti-certificate', xray:'ti-radioactive', other:'ti-file-description' };
+const HISTORY_LABELS = { lab:'Lab Result', medcert:'Med Certificate', xray:'Imaging Report', other:'Document' };
+
+const saved = localStorage.getItem('MediScan_theme');
+if(saved === 'light') document.body.classList.add('light');
+updateThemeIcon();
+
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  localStorage.setItem('MediScan_theme', document.body.classList.contains('light') ? 'light' : 'dark');
+  updateThemeIcon();
+}
+function updateThemeIcon(){
+  document.getElementById('themeIcon').className = document.body.classList.contains('light') ? 'ti ti-moon' : 'ti ti-sun';
+}
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('hidden');
+  document.getElementById('mainWrapper').classList.toggle('expanded');
+}
+function openSidebar(){ document.getElementById('sidebar').classList.add('open'); }
+
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e=>{ e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', ()=> zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e=>{ e.preventDefault(); zone.classList.remove('drag-over'); if(e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]); });
+
+function handleFile(e){ const file = e.target.files[0]; if(file) processFile(file); }
+
+function processFile(file){
+  if(!file.type.startsWith('image/')){ showToast('Please upload an image file.', true); return; }
+  uploadedFile = file;
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    uploadedBase64 = e.target.result.split(',')[1];
+    document.getElementById('previewImg').src = e.target.result;
+    document.getElementById('previewBox').classList.add('show');
+    document.getElementById('scanBtn').disabled = false;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeFile(){
+  uploadedFile = null; uploadedBase64 = null;
+  document.getElementById('previewBox').classList.remove('show');
+  document.getElementById('previewImg').src = '';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('scanBtn').disabled = true;
+  document.getElementById('resultSection').style.display = 'none';
+}
+
+// ── Vault Picker ──────────────────────────────────────────────
+let vaultPickerSelected = null;
+
+function openVaultPicker(){
+  vaultPickerSelected = null;
+  document.getElementById('vaultPickerConfirmBtn').disabled = true;
+  const vaultDocs = JSON.parse(localStorage.getItem(userKey('MediScan_vault')) || '[]');
+  const imageDocs = vaultDocs.filter(d => d.dataUrl && d.mime && d.mime.startsWith('image/'));
+  const grid = document.getElementById('vaultPickerGrid');
+  if(!imageDocs.length){
+    grid.innerHTML = `<div class="vault-picker-empty"><i class="ti ti-photo-off" style="font-size:2rem;display:block;margin-bottom:0.5rem;opacity:0.4;"></i>No image documents in your vault yet.<br><a href="vault.html" style="color:var(--accent,#8b9eff);text-decoration:none;font-size:0.82rem;">Go to My Documents →</a></div>`;
+  } else {
+    grid.innerHTML = `<div class="vault-picker-grid">${imageDocs.map(d=>`
+      <div class="vault-picker-card" id="vpc-${d.id}" onclick="selectVaultDoc(${d.id})">
+        <img class="vault-picker-thumb" src="${d.dataUrl}" alt="${escapeHtml(d.name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
+        <div class="vault-picker-thumb-placeholder" style="display:none;"><i class="ti ti-file-text"></i></div>
+        <div class="vault-picker-name" title="${escapeHtml(d.name)}">${escapeHtml(d.name)}</div>
+        <div class="vault-picker-meta">${d.date||''}</div>
+      </div>`).join('')}
+    </div>`;
+  }
+  document.getElementById('vaultPickerOverlay').classList.add('show');
+}
+
+function selectVaultDoc(id){
+  vaultPickerSelected = id;
+  document.querySelectorAll('.vault-picker-card').forEach(el => el.classList.remove('selected'));
+  const card = document.getElementById('vpc-'+id);
+  if(card) card.classList.add('selected');
+  document.getElementById('vaultPickerConfirmBtn').disabled = false;
+}
+
+function confirmVaultPick(){
+  if(!vaultPickerSelected) return;
+  const vaultDocs = JSON.parse(localStorage.getItem(userKey('MediScan_vault')) || '[]');
+  const doc = vaultDocs.find(d => d.id === vaultPickerSelected);
+  if(!doc){ showToast('Could not find that document.', true); closeVaultPicker(); return; }
+  // Load into scanner as if it was uploaded
+  uploadedBase64 = doc.dataUrl.split(',')[1];
+  uploadedFile = { type: doc.mime, name: doc.name };
+  document.getElementById('previewImg').src = doc.dataUrl;
+  document.getElementById('previewBox').classList.add('show');
+  document.getElementById('scanBtn').disabled = false;
+  closeVaultPicker();
+  showToast(`"${doc.name}" loaded — ready to scan.`);
+  document.getElementById('scanBtn').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function closeVaultPicker(){
+  document.getElementById('vaultPickerOverlay').classList.remove('show');
+  vaultPickerSelected = null;
+}
+
+// ── Camera ────────────────────────────────────────────────────
+let cameraStream = null;
+let capturedPhotoBlob = null;
+
+function openCamera(){
+  document.getElementById('cameraVideo').style.display = 'none';
+  document.getElementById('cameraCapturedPreview').style.display = 'none';
+  document.getElementById('cameraFootLive').style.display = 'none';
+  document.getElementById('cameraFootReview').style.display = 'none';
+  const statusEl = document.getElementById('cameraStatusMsg');
+  statusEl.style.display = 'flex'; statusEl.style.flexDirection = 'column'; statusEl.style.alignItems = 'center';
+  statusEl.innerHTML = `<i class="ti ti-camera" style="font-size:28px;display:block;margin-bottom:0.5rem;opacity:0.7;"></i>Starting camera...`;
+  capturedPhotoBlob = null;
+  document.getElementById('cameraModalOverlay').classList.add('show');
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ fallbackToFileCamera('Live camera isn\'t supported in this browser.'); return; }
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+    .then(stream => {
+      cameraStream = stream;
+      const video = document.getElementById('cameraVideo');
+      video.srcObject = stream; video.style.display = 'block';
+      document.getElementById('cameraStatusMsg').style.display = 'none';
+      document.getElementById('cameraFootLive').style.display = 'flex';
+    })
+    .catch(err => {
+      let reason = 'Couldn\'t access your camera.';
+      if(err.name === 'NotAllowedError') reason = 'Camera access was denied.';
+      else if(err.name === 'NotFoundError') reason = 'No camera was found on this device.';
+      fallbackToFileCamera(reason);
+    });
+}
+
+function fallbackToFileCamera(reason){ closeCameraModal(); showToast(reason + ' Opening file picker instead.', true); document.getElementById('cameraInput').click(); }
+function capturePhoto(){
+  const video = document.getElementById('cameraVideo');
+  const canvas = document.getElementById('cameraCanvas');
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+  canvas.toBlob(blob => {
+    capturedPhotoBlob = blob;
+    const previewImg = document.getElementById('cameraCapturedPreview');
+    previewImg.src = URL.createObjectURL(blob); previewImg.style.display = 'block';
+    video.style.display = 'none';
+    document.getElementById('cameraFootLive').style.display = 'none';
+    document.getElementById('cameraFootReview').style.display = 'flex';
+  }, 'image/jpeg', 0.92);
+}
+function retakePhoto(){
+  capturedPhotoBlob = null;
+  document.getElementById('cameraCapturedPreview').style.display = 'none';
+  document.getElementById('cameraVideo').style.display = 'block';
+  document.getElementById('cameraFootReview').style.display = 'none';
+  document.getElementById('cameraFootLive').style.display = 'flex';
+}
+function useCapturedPhoto(){
+  if(!capturedPhotoBlob) return;
+  processFile(new File([capturedPhotoBlob], `camera-capture-${Date.now()}.jpg`, { type: 'image/jpeg' }));
+  closeCameraModal();
+}
+function closeCameraModal(){
+  document.getElementById('cameraModalOverlay').classList.remove('show');
+  if(cameraStream){ cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+  const p = document.getElementById('cameraCapturedPreview');
+  if(p.src) URL.revokeObjectURL(p.src);
+}
+document.addEventListener('keydown', function(e){
+  if(e.key==='Escape'){
+    if(document.getElementById('cameraModalOverlay').classList.contains('show')) closeCameraModal();
+    if(document.getElementById('vaultPickerOverlay').classList.contains('show')) closeVaultPicker();
+    closeConfirmModal();
+  }
+});
+
+// ── Gemini ────────────────────────────────────────────────────
+const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
+async function callGeminiOnce(model, contents){
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':GEMINI_API_KEY},
+    body: JSON.stringify({ contents, generationConfig:{ maxOutputTokens:2048, thinkingConfig:{ thinkingBudget:0 } } })
+  });
+  return { status: response.status, data: await response.json() };
+}
+async function callGeminiWithRetry(contents){
+  const maxAttempts = 2, baseDelay = 2000;
+  const statusEl = document.getElementById('loadingStatusText');
+  let lastErr = 'Unknown error.';
+  for(let m=0; m<GEMINI_MODELS.length; m++){
+    const model = GEMINI_MODELS[m];
+    for(let attempt=1; attempt<=maxAttempts; attempt++){
+      const { status, data } = await callGeminiOnce(model, contents);
+      if(!data.error) return data;
+      lastErr = data.error.message;
+      const overloaded = status===503||status===429;
+      if(!overloaded) throw new Error(lastErr);
+      if(attempt < maxAttempts){ const d=baseDelay*Math.pow(2,attempt-1); if(statusEl) statusEl.textContent=`${model} is busy, retrying in ${d/1000}s...`; await new Promise(r=>setTimeout(r,d)); }
+      else if(m < GEMINI_MODELS.length-1){ if(statusEl) statusEl.textContent=`${model} is busy, trying ${GEMINI_MODELS[m+1]}...`; await new Promise(r=>setTimeout(r,1000)); break; }
+      else throw new Error(`All models are busy (${lastErr}). Try again shortly.`);
+    }
+  }
+}
+
+async function scanDocument(){
+  if(!uploadedBase64){ showToast('Please upload an image first.', true); return; }
+  const lang = document.getElementById('langSelect').value;
+  const notes = document.getElementById('notesInput').value;
+  const checks = [];
+  if(document.getElementById('chk1').checked) checks.push('any concerning or abnormal findings');
+  if(document.getElementById('chk2').checked) checks.push('how the results compare to normal/reference ranges');
+  if(document.getElementById('chk3').checked) checks.push('recommended follow-up actions');
+  if(document.getElementById('chk4').checked) checks.push('a plain language summary');
+  const langInstr = lang==='filipino' ? 'Respond entirely in Filipino (Tagalog).' : lang==='both' ? 'Provide the response in English first, then Filipino below.' : 'Respond in English.';
+  const prompt = `You are a medical document reader assistant. Analyze this image of a medical document.\n\n${langInstr}\n\n${notes?`Additional context: "${notes}"`:''}
+\nPlease extract and explain clearly:\n1. What type of document this is\n2. Patient name (if visible)\n3. Doctor name and clinic/facility (if visible)\n4. Date of the result (if visible)\n5. For each test result found, explain it in one plain-language sentence.\n6. An overall plain-language summary\n${checks.length?'7. Also check for: '+checks.join(', '):''}\n\nFormat in clear sections using plain sentences. Never use tables or pipe-separated values. End with a brief disclaimer.`;
+
+  document.getElementById('scanBtn').disabled = true;
+  document.getElementById('loadingDots').style.display = 'flex';
+  document.getElementById('resultSection').style.display = 'none';
+  const statusEl = document.getElementById('loadingStatusText');
+  if(statusEl) statusEl.textContent = 'Reading your document...';
+  conversationHistory = [];
+  document.getElementById('followUpThread').innerHTML = '';
+  document.getElementById('followUpInput').value = '';
+
+  const mime = uploadedFile.type || 'image/jpeg';
+  const initialTurn = { role:'user', parts:[{ inline_data:{ mime_type: mime, data:uploadedBase64 } },{ text:prompt }] };
+  try {
+    const data = await callGeminiWithRetry([initialTurn]);
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Could not read document.';
+    conversationHistory = [initialTurn, { role:'model', parts:[{ text }] }];
+    const imageDataUrl = document.getElementById('previewImg').src;
+    displayResult(text, imageDataUrl);
+    addToHistory(text, imageDataUrl);
+  } catch(err){
+    document.getElementById('resultSection').style.display = 'block';
+    document.getElementById('resultText').innerHTML = `<span style="color:#f87171;">⚠️ Error: ${err.message}</span>`;
+  }
+  document.getElementById('loadingDots').style.display = 'none';
+  document.getElementById('scanBtn').disabled = false;
+}
+
+function formatAiText(text){
+  return text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n\n/g,'</p><p style="margin-top:0.8rem">').replace(/\n/g,'<br/>');
+}
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str; return d.innerHTML; }
+function showToast(msg, isError){
+  const c=document.getElementById('toastContainer'); const t=document.createElement('div');
+  t.className=isError?'toast error':'toast';
+  t.innerHTML=`<i class="ti ${isError?'ti-alert-circle':'ti-check'}"></i> ${escapeHtml(msg)}`;
+  c.appendChild(t); setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); },2600);
+}
+function openConfirmModal(title,message,onConfirm,danger){
+  document.getElementById('confirmModalTitle').textContent=title;
+  document.getElementById('confirmModalMessage').textContent=message;
+  const btn=document.getElementById('confirmModalConfirmBtn');
+  btn.textContent=danger?'Delete':'Confirm'; btn.style.background=danger?'var(--red)':''; btn.style.color=danger?'#fff':'';
+  btn.onclick=function(){ closeConfirmModal(); onConfirm(); };
+  document.getElementById('confirmModalOverlay').classList.add('show');
+}
+function closeConfirmModal(){ document.getElementById('confirmModalOverlay').classList.remove('show'); }
+
+function displayResult(text, imageDataUrl){
+  document.getElementById('resultTitle').textContent = 'Document Analysis';
+  const imageEl = document.getElementById('resultImage');
+  if(imageDataUrl){ imageEl.src=imageDataUrl; imageEl.style.display='block'; } else { imageEl.style.display='none'; imageEl.src=''; }
+  document.getElementById('resultText').innerHTML = `<p>${formatAiText(text)}</p>`;
+  if(text.toLowerCase().includes('warning')||text.toLowerCase().includes('contraindic')||text.toLowerCase().includes('caution')){
+    document.getElementById('warningAlert').style.display='flex';
+    document.getElementById('warningText').textContent='This document contains findings that may need attention. Please consult your doctor.';
+  } else { document.getElementById('warningAlert').style.display='none'; }
+  document.getElementById('resultSection').style.display='block';
+  document.getElementById('resultSection').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function addToHistory(text, imageDataUrl){
+  const preview = text.substring(0,60).replace(/\n/g,' ')+'...';
+  const entry = { id:Date.now(), preview, date:new Date().toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}), fullText:text, image:imageDataUrl||null, starred:false };
+  scanHistory.unshift(entry);
+  if(scanHistory.length>10) scanHistory=scanHistory.slice(0,10);
+  if(!saveHistory()){ scanHistory=scanHistory.slice(0,5); saveHistory(); }
+  renderHistory(); extractResultValues(entry);
+}
+function saveHistory(){
+  try { localStorage.setItem(userKey('MediScan_history'), JSON.stringify(scanHistory)); return true; }
+  catch(err){ return false; }
+}
+function historyDisplayTitle(h){ return h.customName ? h.customName : ((HISTORY_LABELS[h.type]||'Document')+' — '+h.preview); }
+function historyCardHtml(h){
+  return `<div class="history-card" onclick="showHistory(${h.id})">
+    <div class="history-card-icon"><i class="ti ${HISTORY_ICONS[h.type]||'ti-file'}"></i></div>
+    <div class="history-card-info">
+      <div class="history-card-title" id="hist-title-${h.id}">${escapeHtml(historyDisplayTitle(h))}</div>
+      <div class="history-card-meta">${h.date}</div>
+    </div>
+    <button class="icon-btn" title="${h.starred?'Unstar':'Star'}" onclick="event.stopPropagation();toggleStarHistory(${h.id})"><i class="ti ti-star" style="${h.starred?'color:#fbbf24;':''}"></i></button>
+    <button class="icon-btn" title="Rename" onclick="event.stopPropagation();startRenameHistory(${h.id})"><i class="ti ti-pencil"></i></button>
+    <button class="icon-btn danger" title="Delete" onclick="event.stopPropagation();deleteHistory(${h.id})"><i class="ti ti-trash"></i></button>
+  </div>`;
+}
+function renderHistory(){
+  const sg=document.getElementById('starredGroup'), ss=document.getElementById('starredStrip');
+  const rl=document.getElementById('recentLabel'), strip=document.getElementById('historyStrip');
+  if(!scanHistory.length){ sg.style.display='none'; rl.style.display='none'; strip.innerHTML='<div style="font-size:0.82rem;color:var(--ink4);">No scans yet. Upload your first document above.</div>'; return; }
+  const starred=scanHistory.filter(h=>h.starred), unstarred=scanHistory.filter(h=>!h.starred);
+  if(starred.length){ sg.style.display='block'; ss.innerHTML=starred.slice(0,5).map(historyCardHtml).join(''); } else { sg.style.display='none'; ss.innerHTML=''; }
+  rl.style.display=(starred.length&&unstarred.length)?'flex':'none';
+  if(unstarred.length){ strip.innerHTML=unstarred.slice(0,5).map(historyCardHtml).join(''); }
+  else { strip.innerHTML=starred.length?'<div style="font-size:0.82rem;color:var(--ink4);">Nothing else here yet.</div>':'<div style="font-size:0.82rem;color:var(--ink4);">No scans yet.</div>'; }
+}
+function toggleStarHistory(id){ const e=scanHistory.find(h=>h.id===id); if(!e) return; e.starred=!e.starred; saveHistory(); renderHistory(); }
+function startRenameHistory(id){
+  const e=scanHistory.find(h=>h.id===id); if(!e) return;
+  const el=document.getElementById('hist-title-'+id);
+  el.innerHTML=`<input type="text" value="${escapeHtml(historyDisplayTitle(e))}" id="hist-rename-input-${id}" onclick="event.stopPropagation();" onkeydown="if(event.key==='Enter'){confirmRenameHistory(${id});}if(event.key==='Escape'){renderHistory();}" style="width:100%;padding:4px 6px;border-radius:6px;border:1px solid var(--ink4);background:transparent;color:inherit;font-family:inherit;font-size:0.85rem;"/>`;
+  const input=document.getElementById('hist-rename-input-'+id); input.focus(); input.select();
+}
+function confirmRenameHistory(id){
+  const input=document.getElementById('hist-rename-input-'+id); const name=input.value.trim();
+  const e=scanHistory.find(h=>h.id===id); if(e&&name) e.customName=name; saveHistory(); renderHistory();
+}
+function deleteHistory(id){
+  const e=scanHistory.find(h=>h.id===id);
+  openConfirmModal('Delete scan',`Delete "${e?historyDisplayTitle(e):'this scan'}"? This cannot be undone.`,function(){ scanHistory=scanHistory.filter(h=>h.id!==id); saveHistory(); renderHistory(); showToast('Scan deleted.'); },true);
+}
+function showHistory(id){ const e=scanHistory.find(h=>h.id===id); if(!e) return; conversationHistory=[]; document.getElementById('followUpThread').innerHTML=''; displayResult(e.fullText,e.image); }
+
+async function askFollowUp(){
+  const input=document.getElementById('followUpInput'); const question=input.value.trim(); if(!question) return;
+  if(!conversationHistory.length){ showToast('Please scan a document first.', true); return; }
+  const btn=document.getElementById('followUpBtn'); btn.disabled=true; input.disabled=true;
+  const thread=document.getElementById('followUpThread'); const answerId='followup-answer-'+Date.now();
+  thread.insertAdjacentHTML('beforeend',`<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:0.75rem;"><div style="font-weight:600;margin-bottom:0.35rem;">${escapeHtml(question)}</div><div id="${answerId}" style="color:var(--ink3);">Thinking...</div></div>`);
+  thread.scrollTop=thread.scrollHeight; input.value='';
+  conversationHistory.push({ role:'user', parts:[{ text:question }] });
+  try {
+    const data=await callGeminiWithRetry(conversationHistory);
+    const answer=data.candidates?.[0]?.content?.parts?.[0]?.text||'Sorry, I could not answer that.';
+    conversationHistory.push({ role:'model', parts:[{ text:answer }] });
+    document.getElementById(answerId).innerHTML=`<p>${formatAiText(answer)}</p>`;
+    document.getElementById(answerId).style.color='';
+  } catch(err){ document.getElementById(answerId).innerHTML=`<span style="color:#f87171;">⚠️ ${err.message}</span>`; conversationHistory.pop(); }
+  btn.disabled=false; input.disabled=false; input.focus();
+}
+
+function copyResult(){ navigator.clipboard.writeText(document.getElementById('resultText').innerText).then(()=>showToast('Copied to clipboard!')); }
+function shareResult(){ const text=document.getElementById('resultText').innerText; if(navigator.share){ navigator.share({title:'MediScan Result',text}); } else { copyResult(); } }
+
+async function extractResultValues(entry){
+  const prompt = `From the following medical document analysis, extract every numeric test result. Respond with ONLY a JSON array, no markdown. Each item: {"name":"...","value":"...","unit":"...","range":"...","status":"high|low|normal"}. If none found: []\n\nTEXT:\n${entry.fullText}`;
+  try {
+    const data=await callGeminiWithRetry([{ role:'user', parts:[{ text:prompt }] }]);
+    const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'[]';
+    const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    if(!Array.isArray(parsed)) return;
+    const target=scanHistory.find(h=>h.id===entry.id); if(!target) return;
+    target.extractedResults=parsed; saveHistory();
+  } catch(err){ console.error('Result extraction skipped:', err); }
+}
+
+renderHistory();
+</script>
+</body>
+</html>

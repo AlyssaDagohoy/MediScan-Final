@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediScan — Settings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css"/>
+<link rel="stylesheet" href="style.css"/>
+<style>
+  .settings-section{margin-bottom:1.4rem;}
+  .settings-section-head{display:flex;align-items:center;gap:9px;margin-bottom:14px;}
+  .settings-section-head i{font-size:1.15rem;color:var(--accent,#8b9eff);}
+  .settings-section-head h2{font-size:1rem;font-weight:600;margin:0;color:var(--ink);}
+  .settings-section-sub{font-size:0.8rem;color:var(--ink2);margin:-8px 0 14px 0;line-height:1.5;}
+  .settings-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 0;border-bottom:1px solid var(--border);}
+  .settings-row:last-child{border-bottom:none;}
+  .settings-row-label{font-size:0.88rem;color:var(--ink);}
+  .settings-row-sub{font-size:0.76rem;color:var(--ink2);margin-top:2px;}
+  .toggle-switch{position:relative;width:42px;height:24px;flex-shrink:0;}
+  .toggle-switch input{opacity:0;width:0;height:0;position:absolute;}
+  .toggle-slider{position:absolute;inset:0;border-radius:24px;cursor:pointer;background:var(--border);transition:background 0.2s;}
+  .toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;border-radius:50%;background:#fff;transition:transform 0.2s;}
+  .toggle-switch input:checked + .toggle-slider{background:var(--accent,#8b9eff);}
+  .toggle-switch input:checked + .toggle-slider::before{transform:translateX(18px);}
+  .danger-zone{border:1px solid color-mix(in srgb,var(--red,#e25c5c) 35%,transparent);border-radius:10px;padding:14px 16px;margin-top:6px;}
+  .danger-zone-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;}
+  .danger-zone-row + .danger-zone-row{border-top:1px solid var(--border);}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="logo">
+        <div class="logo-icon"><i class="ti ti-file-text"></i></div>
+        <div class="logo-name">MediScan</div>
+      </div>
+      <button class="sidebar-toggle" onclick="toggleSidebar()" title="Close sidebar"><i class="ti ti-layout-sidebar-left-collapse"></i></button>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Menu</div>
+      <a class="nav-item" href="scanner.html"><i class="ti ti-scan"></i> Scan Medical Result</a>
+      <a class="nav-item" href="vault.html"><i class="ti ti-folder-open"></i> My Documents</a>
+      <div class="nav-label" style="margin-top:0.5rem;">Tools</div>
+      <a class="nav-item" href="reminders.html"><i class="ti ti-bell"></i> Reminders</a>
+      <a class="nav-item active" href="settings.html"><i class="ti ti-settings"></i> Settings</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div id="sidebarUser" style="display:flex;align-items:center;gap:10px;padding:.75rem .8rem;background:var(--surface3);border:1px solid var(--border);border-radius:var(--r2);margin-bottom:.75rem;">
+        <div id="userAvatar" style="width:34px;height:34px;border-radius:50%;background:var(--teal-mid);border:1px solid var(--teal);display:flex;align-items:center;justify-content:center;color:var(--teal);font-size:15px;font-weight:600;flex-shrink:0;">?</div>
+        <div style="flex:1;min-width:0;">
+          <div id="userName" style="font-size:.78rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+          <div id="userEmail" style="font-size:.68rem;color:var(--ink4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+        </div>
+      </div>
+      <button onclick="logout()" style="width:100%;display:flex;align-items:center;gap:8px;padding:.6rem .8rem;background:transparent;border:1px solid var(--border);border-radius:var(--r);color:var(--ink3);font-family:'Inter',sans-serif;font-size:.78rem;cursor:pointer;transition:all .15s;margin-bottom:.75rem;" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)';this.style.background='var(--red-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--ink3)';this.style.background='transparent'">
+        <i class="ti ti-logout"></i> Log out
+      </button>
+      <div class="sidebar-disclaimer">MediScan does not replace professional medical advice.</div>
+    </div>
+  </aside>
+  <div class="main-wrapper" id="mainWrapper">
+    <header>
+      <div class="header-left">
+        <button class="sidebar-open-btn" id="sidebarOpenBtn" onclick="openSidebar()"><i class="ti ti-menu-2"></i></button>
+        <span class="badge">Settings</span>
+      </div>
+      <div class="header-right">
+        <button class="theme-btn" onclick="toggleTheme()" title="Toggle light/dark mode" id="themeBtn"><i class="ti ti-sun" id="themeIcon"></i></button>
+      </div>
+    </header>
+    <div class="content-scroll">
+      <div class="hero">
+        <div class="hero-eyebrow"><div class="eyebrow-line"></div><span class="eyebrow-text">Settings</span></div>
+        <h1>Configure MediScan<br>to work <em>your way</em></h1>
+        <p>Appearance, alerts, and your data — all kept on this device.</p>
+      </div>
+      <main>
+        <div class="section settings-section"><div class="section-body">
+          <div class="settings-section-head"><i class="ti ti-sun-moon"></i><h2>Appearance</h2></div>
+          <div class="settings-row">
+            <div><div class="settings-row-label">Dark mode</div><div class="settings-row-sub">Switches every page in the app.</div></div>
+            <label class="toggle-switch"><input type="checkbox" id="darkModeToggle" onchange="onDarkModeToggle()"/><span class="toggle-slider"></span></label>
+          </div>
+        </div></div>
+
+        <div class="section settings-section"><div class="section-body">
+          <div class="settings-section-head"><i class="ti ti-bell-ringing"></i><h2>Notifications</h2></div>
+          <div class="settings-row">
+            <div><div class="settings-row-label">Reminder alerts</div><div class="settings-row-sub">Get a browser notification when a reminder is coming up.</div></div>
+            <label class="toggle-switch"><input type="checkbox" id="notifToggle" onchange="onNotifToggle()"/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-row-label">Remind me</div><div class="settings-row-sub">How far ahead of the date you want the alert.</div></div>
+            <select id="leadDaysSelect" onchange="onLeadDaysChange()" style="max-width:160px;">
+              <option value="0">On the day</option>
+              <option value="1">1 day before</option>
+              <option value="2">2 days before</option>
+              <option value="3">3 days before</option>
+            </select>
+          </div>
+        </div></div>
+
+        <div class="section settings-section"><div class="section-body">
+          <div class="settings-section-head"><i class="ti ti-database"></i><h2>Data management</h2></div>
+          <div class="danger-zone">
+            <div class="danger-zone-row">
+              <div><div class="settings-row-label">Clear vault only</div><div class="settings-row-sub">Deletes all folders and files in My Documents. Scans and reminders are kept.</div></div>
+              <button class="btn-secondary" style="border-color:var(--red);color:var(--red);" onclick="clearVaultOnly()">Clear vault</button>
+            </div>
+            <div class="danger-zone-row">
+              <div><div class="settings-row-label">Reset everything</div><div class="settings-row-sub">Wipes all MediScan data tied to your account on this device. Your login is kept.</div></div>
+              <button class="btn-secondary" style="border-color:var(--red);color:var(--red);" onclick="clearAllData()">Reset all</button>
+            </div>
+          </div>
+        </div></div>
+      </main>
+    </div>
+    <footer>MediScan &nbsp;·&nbsp; AI-powered health document vault &nbsp;·&nbsp; Not a substitute for professional medical advice</footer>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="modal-overlay" id="confirmModalOverlay" onclick="if(event.target===this)closeConfirmModal()">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-head">
+      <div class="modal-head-title" id="confirmModalTitle">Confirm</div>
+      <button class="modal-close" onclick="closeConfirmModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body"><p id="confirmModalMessage" style="font-size:0.86rem;color:var(--ink2);line-height:1.6;margin:0;"></p></div>
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="closeConfirmModal()">Cancel</button>
+      <button class="btn-primary" id="confirmModalConfirmBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script src="auth.js"></script>
+<script>
+requireAuth();
+const _sess = getSession();
+if(_sess){
+  document.getElementById('userName').textContent = _sess.name;
+  document.getElementById('userEmail').textContent = _sess.email;
+  document.getElementById('userAvatar').textContent = _sess.name.charAt(0).toUpperCase();
+}
+
+const savedTheme = localStorage.getItem('MediScan_theme');
+if(savedTheme==='light') document.body.classList.add('light');
+updateThemeIcon();
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  localStorage.setItem('MediScan_theme', document.body.classList.contains('light')?'light':'dark');
+  updateThemeIcon(); syncDarkModeToggleUI();
+}
+function updateThemeIcon(){ document.getElementById('themeIcon').className=document.body.classList.contains('light')?'ti ti-moon':'ti ti-sun'; }
+function syncDarkModeToggleUI(){ document.getElementById('darkModeToggle').checked=!document.body.classList.contains('light'); }
+function onDarkModeToggle(){
+  const wantsDark=document.getElementById('darkModeToggle').checked;
+  document.body.classList.toggle('light',!wantsDark);
+  localStorage.setItem('MediScan_theme',wantsDark?'dark':'light');
+  updateThemeIcon();
+}
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('hidden'); document.getElementById('mainWrapper').classList.toggle('expanded'); }
+function openSidebar(){ document.getElementById('sidebar').classList.add('open'); }
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str; return d.innerHTML; }
+function showToast(msg, isError){
+  const c=document.getElementById('toastContainer');
+  const t=document.createElement('div');
+  t.className=isError?'toast error':'toast';
+  t.innerHTML=`<i class="ti ${isError?'ti-alert-circle':'ti-check'}"></i> ${escapeHtml(msg)}`;
+  c.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); },2600);
+}
+function openConfirmModal(title, message, onConfirm, danger){
+  document.getElementById('confirmModalTitle').textContent=title;
+  document.getElementById('confirmModalMessage').textContent=message;
+  const btn=document.getElementById('confirmModalConfirmBtn');
+  btn.style.background=danger?'var(--red)':'';
+  btn.style.color=danger?'#fff':'';
+  btn.onclick=function(){ closeConfirmModal(); onConfirm(); };
+  document.getElementById('confirmModalOverlay').classList.add('show');
+}
+function closeConfirmModal(){ document.getElementById('confirmModalOverlay').classList.remove('show'); }
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeConfirmModal(); });
+
+function initSettingsForm(){
+  syncDarkModeToggleUI();
+  document.getElementById('notifToggle').checked=localStorage.getItem(userKey('MediScan_notifications_enabled'))==='true';
+  document.getElementById('leadDaysSelect').value=localStorage.getItem(userKey('MediScan_reminder_lead_days'))||'1';
+}
+function onNotifToggle(){
+  const wantsOn=document.getElementById('notifToggle').checked;
+  if(!wantsOn){ localStorage.setItem(userKey('MediScan_notifications_enabled'),'false'); showToast('Reminder alerts turned off.'); return; }
+  if(!('Notification' in window)){ document.getElementById('notifToggle').checked=false; showToast("Notifications aren't supported in this browser.",true); return; }
+  Notification.requestPermission().then(permission=>{
+    if(permission==='granted'){ localStorage.setItem(userKey('MediScan_notifications_enabled'),'true'); showToast('Reminder alerts turned on.'); }
+    else { document.getElementById('notifToggle').checked=false; localStorage.setItem(userKey('MediScan_notifications_enabled'),'false'); showToast('Notification permission was not granted.',true); }
+  });
+}
+function onLeadDaysChange(){ localStorage.setItem(userKey('MediScan_reminder_lead_days'),document.getElementById('leadDaysSelect').value); showToast('Reminder lead time updated.'); }
+function clearVaultOnly(){
+  openConfirmModal('Clear vault','This deletes every folder and file in My Documents. Scan history and reminders are kept. This cannot be undone.',function(){
+    localStorage.removeItem(userKey('MediScan_vault'));
+    localStorage.removeItem(userKey('MediScan_folders'));
+    localStorage.removeItem(userKey('MediScan_folder_schema'));
+    localStorage.removeItem(userKey('MediScan_dismissed_suggestions'));
+    showToast('Vault cleared.');
+  },true);
+}
+function clearAllData(){
+  openConfirmModal('Reset everything','This wipes all MediScan data tied to your account on this device. This cannot be undone.',function(){
+    getMyKeys().forEach(k=>localStorage.removeItem(k));
+    showToast('All MediScan data has been reset.');
+    initSettingsForm();
+    document.body.classList.remove('light');
+    updateThemeIcon();
+  },true);
+}
+
+initSettingsForm();
+</script>
+</body>
+</html>

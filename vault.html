@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediScan — Document Vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css"/>
+<link rel="stylesheet" href="style.css"/>
+<style>
+  .ai-analyzing{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:10px;border:1px solid var(--border);background:var(--card,rgba(255,255,255,0.03));font-size:0.86rem;color:var(--ink2);}
+  .ai-analyzing .spin{animation:ai-spin 0.9s linear infinite;font-size:1.1rem;}
+  @keyframes ai-spin{to{transform:rotate(360deg);}}
+  .ai-suggest-card{border:1px solid var(--border);border-radius:12px;padding:16px;background:var(--card,rgba(255,255,255,0.03));}
+  .ai-suggest-head{display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:0.78rem;letter-spacing:0.04em;text-transform:uppercase;color:var(--accent,#8b9eff);font-weight:600;}
+  .ai-suggest-row{margin-bottom:12px;}
+  .ai-suggest-row label{display:block;font-size:0.74rem;color:var(--ink2);margin-bottom:5px;}
+  .ai-suggest-row input,.ai-suggest-row select{width:100%;padding:9px 11px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--ink);font-family:inherit;font-size:0.86rem;}
+  .ai-suggest-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+  .ai-pill{font-size:0.72rem;padding:4px 10px;border-radius:20px;border:1px solid var(--border);color:var(--ink2);}
+  .ai-dupe-warning{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:9px;margin-bottom:12px;border:1px solid color-mix(in srgb,var(--amber,#d9a441) 40%,transparent);background:color-mix(in srgb,var(--amber,#d9a441) 10%,transparent);font-size:0.82rem;color:var(--ink2);line-height:1.5;}
+  .ai-dupe-warning i{color:var(--amber,#d9a441);margin-top:2px;}
+  .ai-suggest-actions{display:flex;gap:8px;justify-content:flex-end;}
+  .ai-banner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:13px 16px;border-radius:10px;margin-bottom:1rem;border:1px solid color-mix(in srgb,var(--accent,#8b9eff) 35%,transparent);background:color-mix(in srgb,var(--accent,#8b9eff) 8%,transparent);font-size:0.85rem;color:var(--ink2);}
+  .ai-banner i.ti-bulb{color:var(--accent,#8b9eff);font-size:1.1rem;}
+  .ai-banner-text{flex:1;min-width:200px;}
+  .ai-banner-text b{color:var(--ink);}
+  .ai-banner-actions{display:flex;gap:8px;}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="logo">
+        <div class="logo-icon"><i class="ti ti-file-text"></i></div>
+        <div class="logo-name">MediScan</div>
+      </div>
+      <button class="sidebar-toggle" onclick="toggleSidebar()" title="Close sidebar">
+        <i class="ti ti-layout-sidebar-left-collapse"></i>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Menu</div>
+      <a class="nav-item" href="scanner.html"><i class="ti ti-scan"></i> Scan Medical Result</a>
+      <a class="nav-item active" href="vault.html"><i class="ti ti-folder-open"></i> My Documents</a>
+      <div class="nav-label" style="margin-top:0.5rem;">Tools</div>
+      <a class="nav-item" href="reminders.html"><i class="ti ti-bell"></i> Reminders</a>
+      <a class="nav-item" href="settings.html"><i class="ti ti-settings"></i> Settings</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div id="sidebarUser" style="display:flex;align-items:center;gap:10px;padding:.75rem .8rem;background:var(--surface3);border:1px solid var(--border);border-radius:var(--r2);margin-bottom:.75rem;">
+        <div id="userAvatar" style="width:34px;height:34px;border-radius:50%;background:var(--teal-mid);border:1px solid var(--teal);display:flex;align-items:center;justify-content:center;color:var(--teal);font-size:15px;font-weight:600;flex-shrink:0;">?</div>
+        <div style="flex:1;min-width:0;">
+          <div id="userName" style="font-size:.78rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+          <div id="userEmail" style="font-size:.68rem;color:var(--ink4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+        </div>
+      </div>
+      <button onclick="logout()" style="width:100%;display:flex;align-items:center;gap:8px;padding:.6rem .8rem;background:transparent;border:1px solid var(--border);border-radius:var(--r);color:var(--ink3);font-family:'Inter',sans-serif;font-size:.78rem;cursor:pointer;transition:all .15s;margin-bottom:.75rem;" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)';this.style.background='var(--red-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--ink3)';this.style.background='transparent'">
+        <i class="ti ti-logout"></i> Log out
+      </button>
+      <div class="sidebar-disclaimer">MediScan does not replace professional medical advice.</div>
+    </div>
+  </aside>
+  <div class="main-wrapper" id="mainWrapper">
+    <header>
+      <div class="header-left">
+        <button class="sidebar-open-btn" id="sidebarOpenBtn" onclick="openSidebar()"><i class="ti ti-menu-2"></i></button>
+        <span class="badge">Document Vault</span>
+      </div>
+      <div class="header-right">
+        <button class="theme-btn" onclick="toggleTheme()" title="Toggle light/dark mode" id="themeBtn"><i class="ti ti-sun" id="themeIcon"></i></button>
+      </div>
+    </header>
+    <div class="content-scroll">
+      <div class="hero">
+        <div class="hero-eyebrow"><div class="eyebrow-line"></div><span class="eyebrow-text">Document Vault</span></div>
+        <h1>Organize your files<br>into <em>folders</em></h1>
+        <p>Create a folder, give it a name, and upload your documents straight into it.</p>
+      </div>
+      <main><div id="viewContainer"></div></main>
+    </div>
+    <footer>MediScan &nbsp;·&nbsp; AI-powered health document vault &nbsp;·&nbsp; Not a substitute for professional medical advice</footer>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="modal-overlay" id="confirmModalOverlay" onclick="if(event.target===this) closeConfirmModal()">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-head">
+      <div class="modal-head-title" id="confirmModalTitle">Confirm</div>
+      <button class="modal-close" onclick="closeConfirmModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body"><p id="confirmModalMessage" style="font-size:0.86rem;color:var(--ink2);line-height:1.6;margin:0;"></p></div>
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="closeConfirmModal()">Cancel</button>
+      <button class="btn-primary" id="confirmModalConfirmBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="previewModalOverlay" onclick="if(event.target===this) closePreviewModal()">
+  <div class="modal-box" style="max-width:580px;">
+    <div class="modal-head">
+      <div class="modal-head-title" id="previewModalTitle">Preview</div>
+      <button class="modal-close" onclick="closePreviewModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" id="previewModalBody"></div>
+    <div class="modal-foot">
+      <a class="btn-secondary" id="previewDownloadLink" download style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;"><i class="ti ti-download"></i> Download</a>
+      <button class="btn-secondary" onclick="closePreviewModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="auth.js"></script>
+<script>
+requireAuth();
+const _sess = getSession();
+if(_sess){
+  document.getElementById('userName').textContent = _sess.name;
+  document.getElementById('userEmail').textContent = _sess.email;
+  document.getElementById('userAvatar').textContent = _sess.name.charAt(0).toUpperCase();
+}
+
+const FOLDER_SCHEMA = 'v2-others-only';
+let folders = JSON.parse(localStorage.getItem(userKey('MediScan_folders')) || 'null');
+let docs = JSON.parse(localStorage.getItem(userKey('MediScan_vault')) || '[]');
+let currentFolderId = null;
+let creatingFolder = false;
+
+if(!folders || localStorage.getItem(userKey('MediScan_folder_schema')) !== FOLDER_SCHEMA){
+  folders = [{ id:'others', name:'Others', icon:'ti-folder', preset:true }];
+  docs = docs.map(d => ({ ...d, type:'others' }));
+  localStorage.setItem(userKey('MediScan_folders'), JSON.stringify(folders));
+  localStorage.setItem(userKey('MediScan_vault'), JSON.stringify(docs));
+  localStorage.setItem(userKey('MediScan_folder_schema'), FOLDER_SCHEMA);
+}
+
+function saveFolders(){ localStorage.setItem(userKey('MediScan_folders'), JSON.stringify(folders)); }
+function saveDocs(){ localStorage.setItem(userKey('MediScan_vault'), JSON.stringify(docs)); }
+function getFolder(id){ return folders.find(f=>f.id===id); }
+
+const GEMINI_API_KEY = 'AQ.Ab8RN6IfZKbStgIqMyYabW7v4upenyJhKV3Ygd-Wli4WA9r8jA';
+const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
+const DOC_TYPES = ['Lab Result', 'Prescription', 'Imaging Report', 'Medical Certificate', 'Billing/Receipt', 'Other'];
+
+async function callGeminiOnce(model, contents){
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-goog-api-key':GEMINI_API_KEY},
+    body: JSON.stringify({ contents, generationConfig:{ maxOutputTokens:1024, thinkingConfig:{ thinkingBudget:0 } } })
+  });
+  return { status: response.status, data: await response.json() };
+}
+
+async function callGeminiWithRetry(contents){
+  const maxAttempts = 2, baseDelay = 1500;
+  let lastErr = 'Unknown error.';
+  for(let m=0; m<GEMINI_MODELS.length; m++){
+    const model = GEMINI_MODELS[m];
+    for(let attempt=1; attempt<=maxAttempts; attempt++){
+      const { status, data } = await callGeminiOnce(model, contents);
+      if(!data.error) return data;
+      lastErr = data.error.message;
+      const overloaded = status===503||status===429;
+      if(!overloaded) throw new Error(lastErr);
+      if(attempt < maxAttempts){ await new Promise(r=>setTimeout(r, baseDelay*Math.pow(2,attempt-1))); }
+      else if(m < GEMINI_MODELS.length-1){ await new Promise(r=>setTimeout(r,800)); break; }
+      else throw new Error(`All models are busy (${lastErr}). Try again shortly.`);
+    }
+  }
+}
+
+docs = docs.map(d => ({ ...d, docType: d.docType||'Other', docDate: d.docDate||null }));
+
+const savedTheme = localStorage.getItem('MediScan_theme');
+if(savedTheme === 'light') document.body.classList.add('light');
+updateThemeIcon();
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  localStorage.setItem('MediScan_theme', document.body.classList.contains('light') ? 'light' : 'dark');
+  updateThemeIcon();
+}
+function updateThemeIcon(){
+  document.getElementById('themeIcon').className = document.body.classList.contains('light') ? 'ti ti-moon' : 'ti ti-sun';
+}
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('hidden');
+  document.getElementById('mainWrapper').classList.toggle('expanded');
+}
+function openSidebar(){ document.getElementById('sidebar').classList.add('open'); }
+
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str; return d.innerHTML; }
+
+function showToast(msg, isError){
+  const c=document.getElementById('toastContainer');
+  const t=document.createElement('div');
+  t.className=isError?'toast error':'toast';
+  t.innerHTML=`<i class="ti ${isError?'ti-alert-circle':'ti-check'}"></i> ${escapeHtml(msg)}`;
+  c.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); },2600);
+}
+
+async function analyzeDocumentWithAI(dataUrl, mime){
+  const base64 = dataUrl.split(',')[1];
+  const prompt = `You are looking at a scanned or photographed personal medical document (could be a lab result, prescription, imaging report, medical certificate, or billing receipt). Respond with ONLY a raw JSON object — no markdown code fences, no explanation, nothing else — in exactly this shape:
+{"docType": one of ${JSON.stringify(DOC_TYPES)}, "date": "YYYY-MM-DD" or null if no date is visible, "suggestedName": a short human-readable filename WITHOUT an extension, e.g. "CBC Lab Result - Jun 2026"}
+If you cannot confidently tell what kind of document this is, use "Other" for docType and still propose a reasonable generic suggestedName.`;
+  const contents = [{ role:'user', parts:[{ text:prompt },{ inline_data:{ mime_type:mime, data:base64 } }] }];
+  const data = await callGeminiWithRetry(contents);
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  const parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
+  if(!DOC_TYPES.includes(parsed.docType)) parsed.docType = 'Other';
+  if(!parsed.suggestedName) parsed.suggestedName = 'Untitled Document';
+  return parsed;
+}
+
+function matchFolderForType(docType){
+  if(docType && docType !== 'Other'){
+    const typeWords = docType.toLowerCase().replace(/[^a-z\s]/g,'').split(/\s+/).filter(Boolean);
+    const found = folders.find(f => {
+      const name = f.name.toLowerCase();
+      return typeWords.some(w => w.length > 3 && name.includes(w));
+    });
+    if(found) return found.id;
+  }
+  return currentFolderId || 'others';
+}
+
+function findDuplicates(docType, docDate, suggestedName){
+  if(!docType || docType === 'Other') return [];
+  return docs.filter(d => {
+    if(d.docType !== docType) return false;
+    if(docDate && d.docDate) return d.docDate === docDate;
+    if(!docDate && !d.docDate) return d.name.toLowerCase().includes(suggestedName.toLowerCase().slice(0,8));
+    return false;
+  });
+}
+
+function getFolderSuggestions(){
+  const dismissed = JSON.parse(localStorage.getItem(userKey('MediScan_dismissed_suggestions')) || '[]');
+  const counts = {};
+  docs.filter(d => d.type==='others' && d.docType && d.docType!=='Other').forEach(d => { counts[d.docType]=(counts[d.docType]||0)+1; });
+  return Object.entries(counts)
+    .filter(([type,count]) => count>=3 && !dismissed.includes(type) && !folders.some(f=>f.name.toLowerCase().includes(type.toLowerCase().split(' ')[0])))
+    .map(([type,count]) => ({ type, count }));
+}
+function dismissFolderSuggestion(type){
+  const dismissed = JSON.parse(localStorage.getItem(userKey('MediScan_dismissed_suggestions')) || '[]');
+  dismissed.push(type);
+  localStorage.setItem(userKey('MediScan_dismissed_suggestions'), JSON.stringify(dismissed));
+  render();
+}
+function acceptFolderSuggestion(type){
+  const newFolder = { id:'custom_'+Date.now(), name:type+'s', icon:'ti-folder', preset:false };
+  folders.push(newFolder);
+  let moved = 0;
+  docs.forEach(d => { if(d.type==='others' && d.docType===type){ d.type=newFolder.id; moved++; } });
+  saveFolders(); saveDocs(); render();
+  showToast(`Created "${newFolder.name}" and moved ${moved} file${moved===1?'':'s'} into it.`);
+}
+
+function openConfirmModal(title, message, onConfirm, danger){
+  document.getElementById('confirmModalTitle').textContent = title;
+  document.getElementById('confirmModalMessage').textContent = message;
+  const btn = document.getElementById('confirmModalConfirmBtn');
+  btn.textContent = danger ? 'Delete' : 'Confirm';
+  btn.style.background = danger ? 'var(--red)' : '';
+  btn.style.color = danger ? '#fff' : '';
+  btn.onclick = function(){ closeConfirmModal(); onConfirm(); };
+  document.getElementById('confirmModalOverlay').classList.add('show');
+}
+function closeConfirmModal(){ document.getElementById('confirmModalOverlay').classList.remove('show'); }
+
+function openPreviewModal(doc){
+  if(!doc) return;
+  document.getElementById('previewModalTitle').textContent = doc.name;
+  const body = document.getElementById('previewModalBody');
+  const dl = document.getElementById('previewDownloadLink');
+  if(doc.dataUrl && doc.mime && doc.mime.startsWith('image/')){
+    body.innerHTML = `<img src="${doc.dataUrl}" alt="${escapeHtml(doc.name)}" style="width:100%;border-radius:8px;display:block;"/>`;
+  } else if(doc.dataUrl && doc.mime==='application/pdf'){
+    body.innerHTML = `<embed src="${doc.dataUrl}" type="application/pdf" style="width:100%;height:60vh;border:1px solid var(--border);border-radius:8px;"/>`;
+  } else {
+    body.innerHTML = `<div class="empty-state"><i class="ti ti-file-off"></i><p>No preview available.</p></div>`;
+  }
+  if(doc.dataUrl){ dl.href=doc.dataUrl; dl.setAttribute('download',doc.name); dl.style.display='inline-flex'; }
+  else { dl.style.display='none'; }
+  document.getElementById('previewModalOverlay').classList.add('show');
+}
+function closePreviewModal(){
+  document.getElementById('previewModalOverlay').classList.remove('show');
+  document.getElementById('previewModalBody').innerHTML = '';
+}
+document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ closeConfirmModal(); closePreviewModal(); } });
+
+function render(){
+  const container = document.getElementById('viewContainer');
+  if(currentFolderId){ renderFolderDetail(container); } else { renderFolderGrid(container); }
+}
+
+function renderFolderGrid(container){
+  let html = '';
+  getFolderSuggestions().forEach(s => {
+    html += `<div class="ai-banner"><i class="ti ti-bulb"></i><div class="ai-banner-text">You have <b>${s.count} "${escapeHtml(s.type)}"</b> files sitting in Others — want a dedicated folder for them?</div><div class="ai-banner-actions"><button class="btn-secondary" onclick="dismissFolderSuggestion('${escapeHtml(s.type)}')">Not now</button><button class="btn-primary" onclick="acceptFolderSuggestion('${escapeHtml(s.type)}')">Create folder</button></div></div>`;
+  });
+  html += `<div class="folder-card-grid" id="folderGrid">`;
+  folders.forEach(f => {
+    const count = docs.filter(d=>d.type===f.id).length;
+    html += `<div class="folder-card" onclick="openFolder('${f.id}')">
+      ${!f.preset ? `<div class="folder-card-actions"><button class="icon-btn" title="Rename" onclick="event.stopPropagation();startRenameFolder('${f.id}')"><i class="ti ti-pencil"></i></button><button class="icon-btn danger" title="Delete" onclick="event.stopPropagation();deleteFolder('${f.id}')"><i class="ti ti-trash"></i></button></div>` : ''}
+      <div class="folder-card-icon"><i class="ti ${f.icon}"></i></div>
+      <div class="folder-card-name" id="folder-name-${f.id}">${escapeHtml(f.name)}</div>
+      <div class="folder-card-count">${count} file${count===1?'':'s'}</div>
+    </div>`;
+  });
+  if(creatingFolder){
+    html += `<div class="folder-card"><div class="folder-card-icon"><i class="ti ti-folder-plus"></i></div><input type="text" class="folder-name-input" id="newFolderInput" placeholder="Folder name" onkeydown="if(event.key==='Enter')confirmNewFolder();if(event.key==='Escape')cancelNewFolder();"/><div style="display:flex;gap:4px;margin-top:4px;"><button class="icon-btn" onclick="confirmNewFolder()"><i class="ti ti-check"></i></button><button class="icon-btn danger" onclick="cancelNewFolder()"><i class="ti ti-x"></i></button></div></div>`;
+  } else {
+    html += `<div class="folder-card new-folder" onclick="startNewFolder()"><i class="ti ti-folder-plus"></i><div class="folder-card-name">New Folder</div></div>`;
+  }
+  html += `</div>`;
+  container.innerHTML = html;
+  if(creatingFolder) document.getElementById('newFolderInput').focus();
+}
+
+function startNewFolder(){ creatingFolder=true; render(); }
+function cancelNewFolder(){ creatingFolder=false; render(); }
+function confirmNewFolder(){
+  const input = document.getElementById('newFolderInput');
+  const name = input.value.trim();
+  if(!name){ input.focus(); return; }
+  folders.push({ id:'custom_'+Date.now(), name, icon:'ti-folder', preset:false });
+  saveFolders(); creatingFolder=false; render();
+  showToast(`"${name}" folder created.`);
+}
+function startRenameFolder(id){
+  const f=getFolder(id);
+  document.getElementById('folder-name-'+id).innerHTML=`<input type="text" class="folder-name-input" value="${escapeHtml(f.name)}" id="renameInput-${id}" onkeydown="if(event.key==='Enter')confirmRename('${id}');if(event.key==='Escape')render();" onclick="event.stopPropagation();"/>`;
+  const i=document.getElementById('renameInput-'+id); i.focus(); i.select();
+}
+function confirmRename(id){
+  const input=document.getElementById('renameInput-'+id);
+  const name=input.value.trim(); if(!name) return;
+  getFolder(id).name=name; saveFolders(); render(); showToast('Folder renamed.');
+}
+function deleteFolder(id){
+  const f=getFolder(id);
+  const count=docs.filter(d=>d.type===id).length;
+  openConfirmModal('Delete folder', count>0?`Delete "${f.name}" and the ${count} file(s) inside it?`:`Delete the empty folder "${f.name}"?`, function(){
+    folders=folders.filter(x=>x.id!==id); docs=docs.filter(d=>d.type!==id);
+    saveFolders(); saveDocs(); render(); showToast('Folder deleted.');
+  }, true);
+}
+function openFolder(id){ currentFolderId=id; render(); }
+
+function renderFolderDetail(container){
+  const f=getFolder(currentFolderId);
+  if(!f){ currentFolderId=null; render(); return; }
+  const files=docs.filter(d=>d.type===f.id).sort((a,b)=>b.added-a.added);
+  let html=`
+    <div class="folder-detail-header">
+      <button class="back-btn" onclick="currentFolderId=null;render();"><i class="ti ti-arrow-left"></i> All Folders</button>
+      <div class="folder-detail-title" id="folderDetailTitle"><i class="ti ${f.icon}"></i> ${escapeHtml(f.name)}</div>
+      ${!f.preset?`<div class="folder-detail-actions"><button class="icon-btn" onclick="startRenameFolderDetail('${f.id}')"><i class="ti ti-pencil"></i></button><button class="icon-btn danger" onclick="deleteFolder('${f.id}')"><i class="ti ti-trash"></i></button></div>`:''}
+    </div>
+    <div class="section"><div class="section-body">
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="fileInput" accept="image/*,.pdf" onchange="handleFile(event)"/>
+        <i class="ti ti-cloud-upload upload-icon"></i>
+        <div class="upload-title">Drop a file here or click to browse</div>
+        <div class="upload-sub">AI will read it and suggest a name &amp; folder · JPG, PNG, PDF · Max 10MB</div>
+      </div>
+      <div id="aiUploadStage" style="margin-top:12px;"></div>
+    </div></div>
+    <div style="margin-top:1.2rem;">`;
+  if(!files.length){
+    html+=`<div class="empty-state"><i class="ti ti-folder-x"></i><p>No files in this folder yet.</p></div>`;
+  } else {
+    html+=files.map(d=>`
+      <div class="history-card" style="cursor:default;">
+        <div class="history-card-icon"><i class="ti ${f.icon}"></i></div>
+        <div class="history-card-info">
+          <div class="history-card-title" id="doc-name-${d.id}">${escapeHtml(d.name)}</div>
+          <div class="history-card-meta">${d.date}${d.docType&&d.docType!=='Other'?' · '+escapeHtml(d.docType):''}</div>
+        </div>
+        <button class="icon-btn" title="View" onclick="openPreviewModal(docs.find(x=>x.id===${d.id}))"><i class="ti ti-eye"></i></button>
+        <button class="icon-btn" title="Rename" onclick="startRenameDoc(${d.id})"><i class="ti ti-pencil"></i></button>
+        <button class="icon-btn danger" title="Delete" onclick="deleteDoc(${d.id})"><i class="ti ti-trash"></i></button>
+      </div>`).join('');
+  }
+  html+=`</div>`;
+  container.innerHTML=html;
+  attachUploadHandlers();
+}
+
+function startRenameFolderDetail(id){
+  const f=getFolder(id);
+  document.getElementById('folderDetailTitle').innerHTML=`<i class="ti ${f.icon}"></i> <input type="text" class="folder-name-input" style="max-width:220px;display:inline-block;" value="${escapeHtml(f.name)}" id="renameDetailInput" onkeydown="if(event.key==='Enter')confirmRenameDetail('${id}');if(event.key==='Escape')render();"/>`;
+  const i=document.getElementById('renameDetailInput'); i.focus(); i.select();
+}
+function confirmRenameDetail(id){
+  const name=document.getElementById('renameDetailInput').value.trim(); if(!name) return;
+  getFolder(id).name=name; saveFolders(); render(); showToast('Folder renamed.');
+}
+function startRenameDoc(id){
+  const d=docs.find(x=>x.id===id); if(!d) return;
+  document.getElementById('doc-name-'+id).innerHTML=`<input type="text" class="folder-name-input" style="text-align:left;width:100%;" value="${escapeHtml(d.name)}" id="renameDocInput-${id}" onkeydown="if(event.key==='Enter')confirmRenameDoc(${id});if(event.key==='Escape')render();" onclick="event.stopPropagation();"/>`;
+  const i=document.getElementById('renameDocInput-'+id); i.focus(); i.select();
+}
+function confirmRenameDoc(id){
+  const name=document.getElementById('renameDocInput-'+id).value.trim(); if(!name) return;
+  docs.find(x=>x.id===id).name=name; saveDocs(); render(); showToast('File renamed.');
+}
+
+function attachUploadHandlers(){
+  const zone=document.getElementById('uploadZone'); if(!zone) return;
+  zone.addEventListener('dragover',e=>{ e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
+  zone.addEventListener('drop',e=>{ e.preventDefault(); zone.classList.remove('drag-over'); if(e.dataTransfer.files[0]) processIncomingFile(e.dataTransfer.files[0]); });
+}
+function handleFile(e){ if(e.target.files[0]) processIncomingFile(e.target.files[0]); }
+
+let pendingUpload=null;
+function processIncomingFile(file){
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    const dataUrl=e.target.result;
+    const stage=document.getElementById('aiUploadStage');
+    if(stage) stage.innerHTML=`<div class="ai-analyzing"><i class="ti ti-loader-2 spin"></i> Reading your document and suggesting a name &amp; folder...</div>`;
+    let analysis;
+    try{ analysis=await analyzeDocumentWithAI(dataUrl,file.type); }
+    catch(err){
+      commitDoc({ name:file.name, folderId:currentFolderId, dataUrl, mime:file.type, docType:'Other', docDate:null });
+      showToast('Saved (AI suggestions unavailable right now).');
+      if(stage) stage.innerHTML=''; return;
+    }
+    pendingUpload={ dataUrl, mime:file.type, originalName:file.name, analysis };
+    renderSuggestionCard();
+  };
+  reader.onerror=()=>showToast('Could not read that file.',true);
+  reader.readAsDataURL(file);
+}
+
+function renderSuggestionCard(){
+  const stage=document.getElementById('aiUploadStage');
+  if(!stage||!pendingUpload) return;
+  const { analysis }=pendingUpload;
+  const suggestedFolderId=matchFolderForType(analysis.docType);
+  const dupes=findDuplicates(analysis.docType,analysis.date,analysis.suggestedName);
+  let html=`<div class="ai-suggest-card"><div class="ai-suggest-head"><i class="ti ti-sparkles"></i> AI suggestion</div>
+    <div class="ai-suggest-meta"><span class="ai-pill"><i class="ti ti-file-text"></i> ${escapeHtml(analysis.docType)}</span>${analysis.date?`<span class="ai-pill"><i class="ti ti-calendar"></i> ${escapeHtml(analysis.date)}</span>`:''}</div>`;
+  if(dupes.length) html+=`<div class="ai-dupe-warning"><i class="ti ti-alert-triangle"></i><div>This looks similar to <b>${dupes.length} file${dupes.length===1?'':'s'}</b> already in your vault (e.g. "${escapeHtml(dupes[0].name)}"). You can still save it.</div></div>`;
+  html+=`<div class="ai-suggest-row"><label>File name</label><input type="text" id="aiSuggestName" value="${escapeHtml(analysis.suggestedName)}"/></div>
+    <div class="ai-suggest-row"><label>Save to folder</label><select id="aiSuggestFolder">${folders.map(f=>`<option value="${f.id}" ${f.id===suggestedFolderId?'selected':''}>${escapeHtml(f.name)}</option>`).join('')}</select></div>
+    <div class="ai-suggest-actions"><button class="btn-secondary" onclick="cancelAISave()">Cancel</button><button class="btn-primary" onclick="confirmAISave()">Save</button></div></div>`;
+  stage.innerHTML=html;
+}
+
+function confirmAISave(){
+  if(!pendingUpload) return;
+  commitDoc({ name:document.getElementById('aiSuggestName').value.trim()||pendingUpload.originalName, folderId:document.getElementById('aiSuggestFolder').value, dataUrl:pendingUpload.dataUrl, mime:pendingUpload.mime, docType:pendingUpload.analysis.docType, docDate:pendingUpload.analysis.date });
+  pendingUpload=null;
+  const stage=document.getElementById('aiUploadStage'); if(stage) stage.innerHTML='';
+}
+function cancelAISave(){
+  pendingUpload=null;
+  const stage=document.getElementById('aiUploadStage'); if(stage) stage.innerHTML='';
+  showToast('Upload cancelled.');
+}
+function commitDoc({ name, folderId, dataUrl, mime, docType, docDate }){
+  const newDoc={ id:Date.now(), name, type:folderId, date:new Date().toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}), added:Date.now(), dataUrl, mime, docType:docType||'Other', docDate:docDate||null };
+  docs.unshift(newDoc);
+  try{ saveDocs(); } catch(err){ docs.shift(); showToast('Storage is full — try a smaller file.',true); return; }
+  render();
+  const f=getFolder(folderId);
+  showToast(`Saved to "${f?f.name:'your vault'}".`);
+}
+function deleteDoc(id){
+  const d=docs.find(x=>x.id===id);
+  openConfirmModal('Delete file',`Remove "${d?d.name:'this file'}" from your vault? This cannot be undone.`,function(){
+    docs=docs.filter(x=>x.id!==id); saveDocs(); render(); showToast('File deleted.');
+  },true);
+}
+
+render();
+</script>
+</body>
+</html>

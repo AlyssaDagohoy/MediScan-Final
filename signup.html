@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MediScan — Create Account</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css"/>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--surface2);padding:1.5rem;}
+
+    .auth-page{width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center;gap:1.5rem;}
+
+    .auth-header{display:flex;flex-direction:column;align-items:center;gap:.75rem;text-align:center;}
+    .auth-logo-icon{width:56px;height:56px;background:var(--teal-mid);border:1.5px solid var(--teal);border-radius:16px;display:flex;align-items:center;justify-content:center;color:var(--teal);font-size:26px;box-shadow:0 0 24px rgba(45,212,191,.15);}
+    .auth-brand{font-size:.78rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-top:2px;}
+    .auth-title{font-family:'Playfair Display',serif;font-size:1.75rem;font-weight:500;color:var(--ink);line-height:1.2;}
+    .auth-sub{font-size:.82rem;color:var(--ink3);line-height:1.5;}
+
+    .auth-card{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;display:flex;flex-direction:column;gap:1rem;box-shadow:0 8px 32px rgba(0,0,0,.25);}
+
+    .auth-field{display:flex;flex-direction:column;gap:6px;}
+    .auth-field label{font-size:.75rem;font-weight:600;color:var(--ink2);letter-spacing:.03em;}
+    .input-wrap{position:relative;}
+    .input-wrap .input-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--ink4);font-size:15px;pointer-events:none;}
+    .input-wrap input{width:100%;padding:11px 12px 11px 36px;font-family:'Inter',sans-serif;font-size:.875rem;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface3);color:var(--ink);outline:none;transition:border-color .15s,background .15s,box-shadow .15s;}
+    .input-wrap input:focus{border-color:var(--teal);background:var(--surface);box-shadow:0 0 0 3px rgba(45,212,191,.08);}
+    .input-wrap input::placeholder{color:var(--ink4);}
+    .pw-wrap input{padding-right:40px;}
+    .pw-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--ink3);cursor:pointer;font-size:16px;padding:2px;line-height:1;transition:color .15s;}
+    .pw-toggle:hover{color:var(--teal);}
+
+    .auth-err{display:none;align-items:center;gap:8px;background:var(--red-light);border:1px solid var(--red-mid);color:var(--red);border-radius:var(--r);padding:10px 12px;font-size:.8rem;line-height:1.4;}
+    .auth-err i{font-size:15px;flex-shrink:0;}
+
+    /* Password strength */
+    .pw-strength{display:flex;flex-direction:column;gap:5px;margin-top:2px;}
+    .pw-bars{display:flex;gap:4px;}
+    .pw-bar{flex:1;height:3px;border-radius:2px;background:var(--border2);transition:background .2s;}
+    .pw-bar.weak{background:var(--red);}
+    .pw-bar.fair{background:var(--amber);}
+    .pw-bar.strong{background:var(--teal);}
+    .pw-label{font-size:.7rem;color:var(--ink4);}
+    .pw-label.weak{color:var(--red);}
+    .pw-label.fair{color:var(--amber);}
+    .pw-label.strong{color:var(--teal);}
+
+    .auth-btn{width:100%;padding:11px;background:var(--teal);border:none;border-radius:var(--r);color:#0a1018;font-size:.9rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.01em;}
+    .auth-btn:hover{opacity:.87;}
+    .auth-btn:active{transform:scale(.99);}
+
+    .auth-bottom{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+    .auth-bottom p{font-size:.82rem;color:var(--ink3);}
+    .btn-outline{padding:8px 18px;background:transparent;border:1px solid var(--border2);border-radius:var(--r);color:var(--ink2);font-size:.82rem;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap;}
+    .btn-outline:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-light);}
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear{
+  display:none;
+}
+
+    .auth-tagline{font-size:.72rem;color:var(--ink4);text-align:center;}
+  </style>
+</head>
+<body>
+<div class="auth-page">
+
+  <div class="auth-header">
+    <div class="auth-logo-icon"><i class="ti ti-file-text"></i></div>
+    <div class="auth-brand">MediScan</div>
+    <div class="auth-title">Create account</div>
+    <div class="auth-sub">Store and understand your health records.</div>
+  </div>
+
+  <div class="auth-card">
+    <div class="auth-err" id="err"><i class="ti ti-alert-circle"></i><span id="errMsg"></span></div>
+
+    <div class="auth-field">
+      <label>Full name</label>
+      <div class="input-wrap">
+        <i class="ti ti-user input-icon"></i>
+        <input type="text" id="name" placeholder="Jane Dela Cruz" autocomplete="name"/>
+      </div>
+    </div>
+
+    <div class="auth-field">
+      <label>Email address</label>
+      <div class="input-wrap">
+        <i class="ti ti-mail input-icon"></i>
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+    </div>
+
+    <div class="auth-field">
+      <label>Password</label>
+      <div class="input-wrap pw-wrap">
+        <i class="ti ti-lock input-icon"></i>
+        <input type="password" id="pw" placeholder="At least 8 characters" autocomplete="new-password" oninput="checkStrength(this.value)"/>
+        <button class="pw-toggle" onclick="togglePw('pw',this)" tabindex="-1"><i class="ti ti-eye"></i></button>
+      </div>
+      <div class="pw-strength">
+        <div class="pw-bars">
+          <div class="pw-bar" id="bar1"></div>
+          <div class="pw-bar" id="bar2"></div>
+          <div class="pw-bar" id="bar3"></div>
+        </div>
+        <div class="pw-label" id="pwLabel">Enter a password</div>
+      </div>
+    </div>
+
+    <button class="auth-btn" onclick="doSignup()">
+      <i class="ti ti-user-plus"></i> Create account
+    </button>
+  </div>
+
+  <div class="auth-bottom">
+    <p>Already have an account?</p>
+    <button class="btn-outline" onclick="window.location.href='login.html'">Log in</button>
+  </div>
+
+  <div class="auth-tagline">MediScan · AI-powered health document vault</div>
+
+</div>
+<script src="auth.js"></script>
+<script>
+  if(getSession()) window.location.href='scanner.html';
+
+  function togglePw(id, btn){
+    const input = document.getElementById(id);
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    btn.querySelector('i').className = isHidden ? 'ti ti-eye-off' : 'ti ti-eye';
+  }
+
+  function checkStrength(val){
+    const bars = [document.getElementById('bar1'), document.getElementById('bar2'), document.getElementById('bar3')];
+    const label = document.getElementById('pwLabel');
+    bars.forEach(b => { b.className = 'pw-bar'; });
+    if(!val){ label.className='pw-label'; label.textContent='Enter a password'; return; }
+    let score = 0;
+    if(val.length >= 8) score++;
+    if(/[A-Z]/.test(val) || /[0-9]/.test(val)) score++;
+    if(/[^A-Za-z0-9]/.test(val) || val.length >= 12) score++;
+    const levels = ['weak','fair','strong'];
+    const labels = ['Too short','Could be stronger','Strong password'];
+    for(let i=0;i<score;i++) bars[i].className='pw-bar '+levels[score-1];
+    label.className='pw-label '+levels[score-1];
+    label.textContent=labels[score-1];
+  }
+
+  function doSignup(){
+    const n = document.getElementById('name').value.trim();
+    const e = document.getElementById('email').value.trim();
+    const p = document.getElementById('pw').value;
+    const errEl = document.getElementById('err');
+    const errMsg = document.getElementById('errMsg');
+    errEl.style.display = 'none';
+    if(!n||!e||!p){ errMsg.textContent='Please fill in all fields.'; errEl.style.display='flex'; return; }
+    if(p.length<8){ errMsg.textContent='Password must be at least 8 characters.'; errEl.style.display='flex'; return; }
+    const r = signup(n, e, p);
+    if(r.ok){
+      window.location.href = 'scanner.html';
+    } else {
+      errMsg.textContent = r.error;
+      errEl.style.display = 'flex';
+    }
+  }
+
+  document.addEventListener('keydown', e => { if(e.key === 'Enter') doSignup(); });
+</script>
+</body>
+</html>
