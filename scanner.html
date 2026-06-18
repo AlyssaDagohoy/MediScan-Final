@@ -441,25 +441,19 @@ async function callGeminiOnce(model, contents) {
   };
 }
 
-  return { status: response.status, data: await response.json() };
+  async function callGeminiWithRetry(contents) {
+  let lastErr;
+  for (const model of GEMINI_MODELS) {
+    try {
+      const { status, data } = await callGeminiOnce(model, contents);
+      if (status === 200 && data.candidates?.length) return data;
+      lastErr = new Error(data.error?.message || `Model ${model} failed (${status})`);
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error('All models failed.');
 }
-  return { status: response.status, data: await response.json() };
-}
-async function callGeminiWithRetry(contents){
-  async function callGeminiOnce(model, contents) {
-  const response = await fetch('/api/gemini', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      contents,
-      generationConfig: {
-        maxOutputTokens: 2048,
-        thinkingConfig: {
-          thinkingBudget: 0
-        }
-      }
     })
   });
 
