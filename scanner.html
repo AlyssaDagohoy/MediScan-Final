@@ -446,22 +446,27 @@ async function callGeminiOnce(model, contents) {
   return { status: response.status, data: await response.json() };
 }
 async function callGeminiWithRetry(contents){
-  const maxAttempts = 2, baseDelay = 2000;
-  const statusEl = document.getElementById('loadingStatusText');
-  let lastErr = 'Unknown error.';
-  for(let m=0; m<GEMINI_MODELS.length; m++){
-    const model = GEMINI_MODELS[m];
-    for(let attempt=1; attempt<=maxAttempts; attempt++){
-      const { status, data } = await callGeminiOnce(model, contents);
-      if(!data.error) return data;
-      lastErr = data.error.message;
-      const overloaded = status===503||status===429;
-      if(!overloaded) throw new Error(lastErr);
-      if(attempt < maxAttempts){ const d=baseDelay*Math.pow(2,attempt-1); if(statusEl) statusEl.textContent=`${model} is busy, retrying in ${d/1000}s...`; await new Promise(r=>setTimeout(r,d)); }
-      else if(m < GEMINI_MODELS.length-1){ if(statusEl) statusEl.textContent=`${model} is busy, trying ${GEMINI_MODELS[m+1]}...`; await new Promise(r=>setTimeout(r,1000)); break; }
-      else throw new Error(`All models are busy (${lastErr}). Try again shortly.`);
-    }
-  }
+  async function callGeminiOnce(model, contents) {
+  const response = await fetch('/api/gemini', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      contents,
+      generationConfig: {
+        maxOutputTokens: 2048,
+        thinkingConfig: {
+          thinkingBudget: 0
+        }
+      }
+    })
+  });
+
+  return {
+    status: response.status,
+    data: await response.json()
+  };
 }
 
 async function scanDocument(){
