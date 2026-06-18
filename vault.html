@@ -144,7 +144,7 @@ function saveFolders(){ localStorage.setItem(userKey('MediScan_folders'), JSON.s
 function saveDocs(){ localStorage.setItem(userKey('MediScan_vault'), JSON.stringify(docs)); }
 function getFolder(id){ return folders.find(f=>f.id===id); }
 
-const GEMINI_API_KEY = 'AQ.Ab8RN6LelPWZ3nkMas5gysjk_i3ST-LK7H6c21hqKG2LTAoBMQ';
+const GEMINI_API_KEY = '';
 const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
 const DOC_TYPES = ['Lab Result', 'Prescription', 'Imaging Report', 'Medical Certificate', 'Billing/Receipt', 'Other'];
 
